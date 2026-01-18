@@ -240,7 +240,25 @@ fi
 
 # Detect template remote
 TEMPLATE_REMOTE=$(detect_template_remote)
-print_success "Using template remote: $TEMPLATE_REMOTE"
+if [ -n "$TEMPLATE_REMOTE" ]; then
+    remote_url=$(git remote get-url "$TEMPLATE_REMOTE" 2>/dev/null || echo "unknown")
+    print_success "Using template remote: $TEMPLATE_REMOTE ($remote_url)"
+
+    # Check if URL is a local path
+    if [[ "$remote_url" =~ ^(\.\./|\./|/|[A-Za-z]:) ]]; then
+        print_warning "Remote '$TEMPLATE_REMOTE' points to a local path '$remote_url', not a git URL."
+        print_info "This will cause fetch to fail. Consider setting it to the proper git URL:"
+        echo "  git remote set-url $TEMPLATE_REMOTE https://github.com/luckydonald/hoass_plugin-template.git"
+        read -p "Continue anyway? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+else
+    print_error "No template remote found"
+    exit 1
+fi
 
 # Fetch from template remote
 print_info "Fetching from $TEMPLATE_REMOTE..."
