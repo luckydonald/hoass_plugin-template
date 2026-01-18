@@ -250,3 +250,7 @@ Commit or stash your changes, and then run
 ℹ Or abort with: git rebase --abort
 make: *** [fix-commits] Error 1
 ```
+
+———
+
+After running `init.sh`, it still says `📝 Plugin Template - Commit Script`
