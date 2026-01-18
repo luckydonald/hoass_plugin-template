@@ -106,138 +106,76 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
-# Detect if this is a template repository
+# Detect if this is a template repository and set commit prefix
 REPO_DIR=$(basename "$PWD")
 IS_TEMPLATE_REPO=false
+COMMIT_PREFIX=""
 if echo "$REPO_DIR" | grep -qE "^hoass_(plugin[-_])?template"; then
     IS_TEMPLATE_REPO=true
+    COMMIT_PREFIX="📄TEMPLATE | "
     print_info "Template repository detected"
 fi
 
 # Find the last batch of AI commits
 print_info "Scanning for AI commit batches..."
 
-if [ "$IS_TEMPLATE_REPO" = true ]; then
-    # Template format: look for commits with same step number
-    # Get the most recent AI commit
-    LAST_AI=$(git log --format=%s -1 --grep="ai: \[[0-9]\{3\}\]")
+# Look for unified format: ✨ ai: [NNN] message… (X/Y)
+# Works with or without TEMPLATE prefix
+LAST_AI=$(git log --format=%s -1 --grep="ai: \[[0-9]\+\]")
 
-    if [ -z "$LAST_AI" ]; then
-        print_error "No AI commits found in template format"
-        exit 1
-    fi
+if [ -z "$LAST_AI" ]; then
+    print_error "No AI commits found in expected format"
+    print_info "Expected format: ✨ ai: [NNN] message… (X/Y)"
+    exit 1
+fi
 
-    # Extract the step number
-    STEP=$(echo "$LAST_AI" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
-    PADDED_STEP=$(printf "%03d" "$STEP")
+# Extract the step number (remove leading zeros)
+STEP=$(echo "$LAST_AI" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+PADDED_STEP=$(printf "%03d" "$STEP")
 
-    print_info "Found AI commits for step [$PADDED_STEP]"
+print_info "Found AI commits for step [$PADDED_STEP]"
 
-    # Count commits in this batch
-    COMMIT_COUNT=$(git log --format=%s --grep="ai: \[$PADDED_STEP\]" | wc -l | tr -d ' ')
+# Count commits in this batch
+COMMIT_COUNT=$(git log --format=%s --grep="ai: \[$PADDED_STEP\]" | wc -l | tr -d ' ')
 
-    if [ "$COMMIT_COUNT" -eq 0 ]; then
-        print_error "No commits found for step [$PADDED_STEP]"
-        exit 1
-    fi
+if [ "$COMMIT_COUNT" -eq 0 ]; then
+    print_error "No commits found for step [$PADDED_STEP]"
+    exit 1
+fi
 
-    print_success "Found $COMMIT_COUNT commit(s) in this batch"
+print_success "Found $COMMIT_COUNT commit(s) in this batch"
 
-    # Show the commits
+# Show the commits
+echo ""
+echo "Commits to fix:"
+git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
+echo ""
+
+# Check if this batch was preceded by a query/error update
+FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
+PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
+PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
+
+QUERY_ERROR_COMMIT=""
+if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
+    QUERY_ERROR_COMMIT="$PARENT_COMMIT"
+    print_info "This batch was preceded by: $PARENT_MSG"
     echo ""
-    echo "Commits to fix:"
-    git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
-    echo ""
-
-    # Check if this batch was preceded by a query/error update
-    FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
-    PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
-    PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
-
-    QUERY_ERROR_COMMIT=""
-    if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-        QUERY_ERROR_COMMIT="$PARENT_COMMIT"
-        print_info "This batch was preceded by: $PARENT_MSG"
-        echo ""
-        print_info "Changes in that commit:"
-        echo ""
-
-        # Disable pager unless USE_PAGER is set
-        if [ -z "$USE_PAGER" ]; then
-            export GIT_PAGER=cat
-        fi
-
-        # Try to use bat for colorized output, fall back to plain git show
-        if command -v bat &> /dev/null; then
-            git show "$PARENT_COMMIT" | bat --style=plain --color=always --language=diff --paging=never
-        else
-            git show "$PARENT_COMMIT"
-        fi
-        echo ""
-    fi
-
-else
-    # Regular format: look for commits with same step number (X-Y)
-    # Get the most recent AI commit
-    LAST_AI=$(git log --format=%s -1 --grep="ai: .*[.…]")
-
-    if [ -z "$LAST_AI" ]; then
-        print_error "No AI commits found in regular format"
-        exit 1
-    fi
-
-    # Extract the step number
-    STEP=$(echo "$LAST_AI" | sed -E 's/.*ai: .+[.…]+ \(([0-9]+)-[0-9]+\).*/\1/')
-
-    if [ -z "$STEP" ]; then
-        print_error "Could not extract step number from: $LAST_AI"
-        exit 1
-    fi
-
-    print_info "Found AI commits for step ($STEP-X)"
-
-    # Count commits in this batch
-    COMMIT_COUNT=$(git log --format=%s --grep="ai: .*[.…].* ($STEP-" | wc -l | tr -d ' ')
-
-    if [ "$COMMIT_COUNT" -eq 0 ]; then
-        print_error "No commits found for step ($STEP-X)"
-        exit 1
-    fi
-
-    print_success "Found $COMMIT_COUNT commit(s) in this batch"
-
-    # Show the commits
-    echo ""
-    echo "Commits to fix:"
-    git log --oneline --grep="ai: .*[.…].* ($STEP-" --reverse
+    print_info "Changes in that commit:"
     echo ""
 
-    # Check if this batch was preceded by a query/error update
-    FIRST_COMMIT=$(git log --format=%H --grep="ai: .*[.…].* ($STEP-" --reverse | head -1)
-    PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
-    PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
-
-    QUERY_ERROR_COMMIT=""
-    if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-        QUERY_ERROR_COMMIT="$PARENT_COMMIT"
-        print_info "This batch was preceded by: $PARENT_MSG"
-        echo ""
-        print_info "Changes in that commit:"
-        echo ""
-
-        # Disable pager unless USE_PAGER is set
-        if [ -z "$USE_PAGER" ]; then
-            export GIT_PAGER=cat
-        fi
-
-        # Try to use bat for colorized output, fall back to plain git show
-        if command -v bat &> /dev/null; then
-            git show "$PARENT_COMMIT" | bat --style=plain --color=always --language=diff --paging=never
-        else
-            git show "$PARENT_COMMIT"
-        fi
-        echo ""
+    # Disable pager unless USE_PAGER is set
+    if [ -z "$USE_PAGER" ]; then
+        export GIT_PAGER=cat
     fi
+
+    # Try to use bat for colorized output, fall back to plain git show
+    if command -v bat &> /dev/null; then
+        git show "$PARENT_COMMIT" | bat --style=plain --color=always --language=diff --paging=never
+    else
+        git show "$PARENT_COMMIT"
+    fi
+    echo ""
 fi
 
 # Ask for the message once for all commits in this batch
