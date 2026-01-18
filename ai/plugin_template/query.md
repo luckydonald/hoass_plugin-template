@@ -239,3 +239,7 @@ Do not make merging commits the default option.
 ———
 
 In `init.sh`, combine the sed commands which are shared between `$REPLACE_AUTHORS` and not, to reduce code duplication.
+
+———
+
+In `scripts/commit.sh`, make sure to only rename and/or squash connected blocks of commits, i.e. those with the same $step number. If an query/error update or a different $step number is found in-between, stop there.
