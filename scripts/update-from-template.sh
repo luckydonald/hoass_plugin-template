@@ -136,9 +136,9 @@ continue_rebase() {
 
     if [ -n "$message_file" ] && [ -f "$message_file" ]; then
         # Uncomment conflict details (remove leading # from conflict lines)
-        sed -i 's/^# Conflicts:/Conflicts:/' "$message_file"
-        sed -i 's/^# \t/\t/' "$message_file"  # Uncomment indented conflict file lines
-        sed -i 's/^# /\t/' "$message_file"   # Also handle space instead of tab
+        sed -i 's/^# Conflicts:/Conflicts:/' "$message_file" 2>/dev/null || true
+        sed -i 's/^# \t/\t/' "$message_file" 2>/dev/null || true
+        sed -i 's/^# /\t/' "$message_file" 2>/dev/null || true
     fi
 
     # Prevent git from opening editor by setting GIT_EDITOR to true
