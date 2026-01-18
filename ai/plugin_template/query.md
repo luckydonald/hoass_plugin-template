@@ -226,3 +226,8 @@ When rebasing, tag the current HEAD with a tag to allow easy recovery. (somethin
 Actually, I like the format of the template commits.
 Use that for the end-user commits as well.
 Put the TEMPLATE prefix to the echo statement, instead of the template-string itself. Can be a replacer or string concat, whichever is easier.
+
+———
+
+I've added `.github` (from `../../../hoass_calendar-alarm-clock/.github`) to the template repo.
+Make sure `init.sh` copies that over as well, and that plugin names are replaced with our placeholders, "plugin-template" or similar.
