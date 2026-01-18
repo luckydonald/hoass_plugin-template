@@ -832,6 +832,23 @@ print_info "Cleaning up backup files..."
 find "$REPO_ROOT" -name "*.bak" -delete
 print_success "Backup files removed"
 
+# Write project settings to scripts/init.json
+print_info "Saving project settings to scripts/init.json..."
+cat > "scripts/init.json" << EOF
+{
+  "display_name": "$DISPLAY_NAME",
+  "dash_name": "$DASH_NAME",
+  "snake_name": "$SNAKE_NAME",
+  "pascal_name": "$PASCAL_NAME",
+  "github_user": "$GITHUB_USER",
+  "github_url": "$GITHUB_URL",
+  "keep_backend": $KEEP_BACKEND,
+  "frontend_choice": "$FRONTEND_CHOICE",
+  "current_year": $(date +%Y)
+}
+EOF
+print_success "Project settings saved"
+
 print_header "Initialization Complete!"
 echo ""
 if [ "$ALREADY_INITIALIZED" = true ]; then
