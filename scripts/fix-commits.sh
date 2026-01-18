@@ -578,11 +578,7 @@ if git rebase -i "$REBASE_PARENT"; then
     print_success "Rebase completed successfully!"
     echo ""
     print_info "Updated commits:"
-    if [ "$IS_TEMPLATE_REPO" = true ]; then
-        git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
-    else
-        git log --oneline --grep="ai: .*[.…].* ($STEP-" --reverse
-    fi
+    git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
     echo ""
     print_success "All done! Commits have been fixed."
     echo ""
