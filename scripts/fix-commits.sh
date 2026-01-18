@@ -633,7 +633,9 @@ if git rebase -i "$REBASE_PARENT"; then
     print_success "Rebase completed successfully!"
     echo ""
     print_info "Updated commits:"
-    git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
+    for commit_hash in "${COMMIT_HASHES[@]}"; do
+        git log --oneline -1 "$commit_hash"
+    done
     echo ""
     print_success "All done! Commits have been fixed."
     echo ""
