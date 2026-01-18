@@ -340,3 +340,9 @@ fatal: ambiguous argument '^': unknown revision or path not in the working tree.
 Use '--' to separate paths from revisions, like this:
 'git <command> [<revision>...] -- [<file>...]'
 make: *** [fix-commits] Error 128
+
+———
+
+Now it results in `📄TEMPLATE | 📄TEMPLATE | 🐞 ai: updated errors: fix squash…`, a doubled prefix
+
+———
