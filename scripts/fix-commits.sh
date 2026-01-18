@@ -19,6 +19,10 @@
 
 set -e  # Exit on error
 
+# Recovery tag template - customize this as needed
+# Available variables: {step}, {date}, {time}
+RECOVERY_TAG_TEMPLATE="fix-commits-backup-step-{step}-{date}"
+
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
