@@ -580,8 +580,15 @@ FILE="$1"
 # Get the first non-comment, non-empty line
 FIRST_MSG=$(grep -v '^#' "$FILE" | grep -v '^$' | head -1)
 
-# Replace the file content with just that message
-echo "$FIRST_MSG" > "$FILE"
+# If COMMIT_PREFIX is set and not already present, prepend it
+if [ -n "$COMMIT_PREFIX" ]; then
+    case "$FIRST_MSG" in
+        "$COMMIT_PREFIX"*) echo "$FIRST_MSG" > "$FILE" ;;
+        *) echo "$COMMIT_PREFIX$FIRST_MSG" > "$FILE" ;;
+    esac
+else
+    echo "$FIRST_MSG" > "$FILE"
+fi
 EOFEDITOR
 
 chmod +x "$GIT_EDITOR_SCRIPT"
