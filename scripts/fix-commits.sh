@@ -534,12 +534,8 @@ CURRENT_HEAD=$(git rev-parse HEAD)
 DATE_STR=$(date +%Y%m%d)
 TIME_STR=$(date +%H%M%S)
 
-# Build recovery tag name from template
-if [ "$IS_TEMPLATE_REPO" = true ]; then
-    RECOVERY_TAG=$(echo "$RECOVERY_TAG_TEMPLATE" | sed "s/{step}/$PADDED_STEP/g" | sed "s/{date}/$DATE_STR/g" | sed "s/{time}/$TIME_STR/g")
-else
-    RECOVERY_TAG=$(echo "$RECOVERY_TAG_TEMPLATE" | sed "s/{step}/$STEP/g" | sed "s/{date}/$DATE_STR/g" | sed "s/{time}/$TIME_STR/g")
-fi
+# Build recovery tag name from template (always use padded step)
+RECOVERY_TAG=$(echo "$RECOVERY_TAG_TEMPLATE" | sed "s/{step}/$PADDED_STEP/g" | sed "s/{date}/$DATE_STR/g" | sed "s/{time}/$TIME_STR/g")
 
 # Create the recovery tag
 if git tag "$RECOVERY_TAG" "$CURRENT_HEAD" 2>/dev/null; then
