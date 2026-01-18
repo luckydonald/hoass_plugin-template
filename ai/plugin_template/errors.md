@@ -510,3 +510,29 @@ make: *** [rebase-template] Error 1
 ———
 The rebase script seems to do the right decisions, however, it still opens the editor for every commit to change the message, instead of doing it automatically. Automatically means: use the provided message, but uncomment the merge details (remove leading `#`).
 
+Auto-merging scripts/release.sh
+CONFLICT (content): Merge conflict in scripts/release.sh
+error: could not apply aeedc28... 🛫 template | Applied plugin template with `init.sh`
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+Could not apply aeedc28... 🛫 template | Applied plugin template with `init.sh`
+⚠ Manual conflict resolution required
+
+Files with conflicts:
+ai/plugin_template/query.md
+
+Commands to resolve:
+  1. Edit the conflicted files
+  2. Stage resolved files: git add <file>
+  3. Continue rebase: git rebase --continue
+  4. Or abort: git rebase --abort
+
+Tip: JetBrains IDEs (IntelliJ, PyCharm, etc.) have excellent Git rebase conflict resolution tools
+     Look for 'Resolve Conflicts' in the Git tool window
+
+Press Enter after resolving conflicts manually, or 'a' to abort: 
+ℹ Continuing rebase after manual resolution...
+sed: 1: ".git/rebase-merge/message": invalid command code .
+make: *** [rebase-template] Error 1
