@@ -257,6 +257,7 @@ It should:
 - and check if `README.md` does not contain any replacements calculated (e.g. the new plugin name; just to be extra safe)
 If all those conditions are met:
 - rename `README.md` to `README_REPO_TEMPLATE.md` (overwrite if already existing)
-- rename `README_PROJECT_TEMPLATE.md` to `README.md`
+- copy `README_PROJECT_TEMPLATE.md` to `README.md`
 - do the replacements in `README.md`
 For readability, refactor the `Setting up README files...` in a function, and reorder the `if`s to have a early-return approch instead of nesting those `if`s.
+No need to delete `scripts/README_PROJECT_TEMPLATE.md`.
