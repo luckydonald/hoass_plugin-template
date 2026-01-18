@@ -621,6 +621,27 @@ export SQUASH_MAP_FILE="$SQUASH_MAP"
 print_info "Starting interactive rebase..."
 echo ""
 
+# Create recovery tag before rebase
+CURRENT_HEAD=$(git rev-parse HEAD)
+DATE_STR=$(date +%Y%m%d)
+TIME_STR=$(date +%H%M%S)
+
+# Build recovery tag name from template
+if [ "$IS_TEMPLATE_REPO" = true ]; then
+    RECOVERY_TAG=$(echo "$RECOVERY_TAG_TEMPLATE" | sed "s/{step}/$PADDED_STEP/g" | sed "s/{date}/$DATE_STR/g" | sed "s/{time}/$TIME_STR/g")
+else
+    RECOVERY_TAG=$(echo "$RECOVERY_TAG_TEMPLATE" | sed "s/{step}/$STEP/g" | sed "s/{date}/$DATE_STR/g" | sed "s/{time}/$TIME_STR/g")
+fi
+
+# Create the recovery tag
+if git tag "$RECOVERY_TAG" "$CURRENT_HEAD" 2>/dev/null; then
+    print_success "Created recovery tag: $RECOVERY_TAG"
+    print_info "If something goes wrong, you can recover with: git reset --hard $RECOVERY_TAG"
+else
+    print_warning "Could not create recovery tag (may already exist): $RECOVERY_TAG"
+fi
+echo ""
+
 # Export the batch message as an environment variable (preserves all special characters)
 export BATCH_MSG_ENV="$BATCH_MESSAGE"
 
