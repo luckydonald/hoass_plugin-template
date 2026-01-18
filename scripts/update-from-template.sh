@@ -125,9 +125,28 @@ continue_rebase() {
     fi
 
     # Check if conflicts are still unresolved
-    if git diff --name-only --diff-filter=U 2>/dev/null | grep -q .; then
-        print_error "Conflicts are still present. Please resolve all conflicts and stage the files with 'git add <file>' before continuing."
-        return 1
+    local unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+    if [ -n "$unmerged_files" ]; then
+        local needs_manual=true
+        for file in $unmerged_files; do
+            # Check if file still has conflict markers
+            if ! grep -q "^<<<<<<< " "$file" 2>/dev/null; then
+                # File appears resolved but not staged - add it automatically
+                print_info "Auto-staging resolved file: $file"
+                git add "$file"
+            else
+                needs_manual=false
+                break
+            fi
+        done
+
+        # Re-check after auto-staging
+        unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+        if [ -n "$unmerged_files" ]; then
+            print_error "Conflicts are still present in: $unmerged_files"
+            print_error "Please resolve all conflicts and stage the files with 'git add <file>' before continuing."
+            return 1
+        fi
     fi
 
     print_info "Continuing rebase after manual resolution..."
