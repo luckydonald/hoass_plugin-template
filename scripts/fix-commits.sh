@@ -346,15 +346,16 @@ else
     NEW_MSG="$CURRENT_MSG"
 fi
 
-# Reconstruct the commit message with total
+# Build the full commit message (without prefix)
 PADDED_STEP=$(printf "%03d" "$STEP")
+FULL_MSG="✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
 if [ -n "$COMMIT_PREFIX" ]; then
-    case "$NEW_MSG" in
-        "$COMMIT_PREFIX"*) echo "$NEW_MSG" ;;
-        *) echo "$COMMIT_PREFIX✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)" ;;
+    case "$FULL_MSG" in
+        "$COMMIT_PREFIX"*) echo "$FULL_MSG" ;;
+        *) echo "$COMMIT_PREFIX$FULL_MSG" ;;
     esac
 else
-    echo "✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
+    echo "$FULL_MSG"
 fi
 EOFSCRIPT
 
@@ -390,13 +391,15 @@ else
     # No batch message, keep as-is but ensure prefix is correct
     NEW_MSG="$CURRENT_MSG"
 fi
+# Build the full commit message (without prefix)
+FULL_MSG="$NEW_MSG"
 if [ -n "$COMMIT_PREFIX" ]; then
-    case "$NEW_MSG" in
-        "$COMMIT_PREFIX"*) echo "$NEW_MSG" ;;
-        *) echo "$COMMIT_PREFIX$NEW_MSG" ;;
+    case "$FULL_MSG" in
+        "$COMMIT_PREFIX"*) echo "$FULL_MSG" ;;
+        *) echo "$COMMIT_PREFIX$FULL_MSG" ;;
     esac
 else
-    echo "$NEW_MSG"
+    echo "$FULL_MSG"
 fi
 EOFSCRIPT
 
