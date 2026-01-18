@@ -277,7 +277,7 @@ Similar, for the choosen frontend, `frontend_*/`: both yarn and npm lock files.
 
 ———
 
-Write me a new script which does 
+Write me a new script, `[update-from-template.sh](../../scripts/update-from-template.sh)` which does 
 - `git fetch ${TEMPLATE_REMOTE}`
   - TEMPLATE_REMOTE needs to be detected:
     - if the remote named `template`, `template-origin`, `template-local`, `template-online` or `template-github` exists, use that
@@ -297,3 +297,9 @@ Write me a new script which does
     - How?
 - at the end, display a summary of what files were changed during the rebase.
 - add it to the makefile, too, `make rebase-template` (with `template-rebase` alias)
+
+———
+Have `init.py` write the project settings to `scripts/init.json`.
+Then modify `release.sh` to read that file, and use the name instead of `plugin_template`.
+Actually, write that to a separate script, `get_project_settings.py`, which can be used in any of those scripts to get the json data as variables.
+So basically, read the file, if it is missing, error out, with a hint to run `init.sh` / `make init` first.
