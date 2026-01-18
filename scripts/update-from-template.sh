@@ -59,8 +59,6 @@ detect_template_remote() {
     for name in "${preferred_names[@]}"; do
         if git remote | grep -q "^${name}$"; then
             template_remote="$name"
-            local remote_url=$(git remote get-url "$name" 2>/dev/null || echo "unknown")
-            print_info "Found preferred template remote: $template_remote ($remote_url)"
             break
         fi
     done
@@ -71,7 +69,6 @@ detect_template_remote() {
             local url=$(git remote get-url "$remote" 2>/dev/null || echo "")
             if [[ "$url" =~ github\.com/luckydonald/hoass_(plugin[-_])?template(\.git)?$ ]]; then
                 template_remote="$remote"
-                print_info "Found template remote by URL: $template_remote ($url)"
                 break
             fi
         done < <(git remote)
@@ -82,8 +79,6 @@ detect_template_remote() {
         while IFS= read -r remote; do
             if [[ "$remote" =~ \btemplate\b ]]; then
                 template_remote="$remote"
-                local remote_url=$(git remote get-url "$remote" 2>/dev/null || echo "unknown")
-                print_info "Found template remote by name pattern: $template_remote ($remote_url)"
                 break
             fi
         done < <(git remote)
