@@ -348,7 +348,12 @@ fi
 
 # Reconstruct the commit message with total
 PADDED_STEP=$(printf "%03d" "$STEP")
-echo "COMMIT_PREFIX_PLACEHOLDER✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
+# Only add prefix if not already present
+if [ -n "$COMMIT_PREFIX_PLACEHOLDER" ] && [[ ! "$NEW_MSG" =~ ^$COMMIT_PREFIX_PLACEHOLDER ]]; then
+    echo "$COMMIT_PREFIX_PLACEHOLDER✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
+else
+    echo "✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
+fi
 EOFSCRIPT
 
 # Replace placeholders
@@ -383,10 +388,16 @@ CURRENT_MSG="$1"
 # Check if batch message is provided
 if [ -n "$BATCH_MSG_ENV" ]; then
     # Append ": message" to the existing query/error commit
-    echo "COMMIT_PREFIX_PLACEHOLDER${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+    NEW_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
 else
     # No batch message, keep as-is but ensure prefix is correct
-    echo "COMMIT_PREFIX_PLACEHOLDER${CURRENT_MSG}"
+    NEW_MSG="$CURRENT_MSG"
+fi
+# Only add prefix if not already present
+if [ -n "$COMMIT_PREFIX_PLACEHOLDER" ] && [[ ! "$NEW_MSG" =~ ^$COMMIT_PREFIX_PLACEHOLDER ]]; then
+    echo "$COMMIT_PREFIX_PLACEHOLDER$NEW_MSG"
+else
+    echo "$NEW_MSG"
 fi
 EOFSCRIPT
 
