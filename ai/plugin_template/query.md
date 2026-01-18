@@ -297,6 +297,7 @@ Write me a new script, `[update-from-template.sh](../../scripts/update-from-temp
   - Automatically edit the commit message to replace the `#` at the beginning of lines (commented out) with an escaped `\#` so that that additional rebase information is preserved.
 - at the end, display a summary of what files were changed during the rebase.
 - add it to the makefile, too, `make rebase-template` (with `template-rebase` alias)
+- When auto-accepting (and editing) rebase conflict commit messages, add a line at the with details about when the rebase happened, and from which commit to which commit.
 
 ———
 Have `init.py` write the project settings to `scripts/init.json`.
