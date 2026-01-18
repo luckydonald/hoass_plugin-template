@@ -30,7 +30,7 @@ help:
 	@echo "  build-ts       - Build frontend"
 	@echo "  commit         - Commit changes with structured messages"
 	@echo "  fix-commits    - Fix AI commit messages (update totals and edit messages)"
-	@echo "  commit-fix     - Alias for `fix-commits` above"
+	@echo "  commit-fix     - Alias for 'fix-commits' above"
 	@echo "  release        - Bump version, lint, build, and push release"
 	@echo "  help           - Show this help message"
 
