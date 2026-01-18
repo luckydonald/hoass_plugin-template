@@ -6,6 +6,7 @@ A single command which does:
 - pushes to origin mane (including the tag)
 Additionally:
 - have a makefile with commands for the individual steps.
+  - If I enter an invalid command in the makefile, I want the help, too.
 - The "Warning: You have uncommitted changes" should follow gitignore
 - Sync the version numbers with the tags
 - it should only increment the version after it succeeded with the tests.
