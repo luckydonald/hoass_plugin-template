@@ -699,31 +699,7 @@ done
 
 # Handle README files
 print_info "Setting up README files..."
-
-if [ -f "scripts/README_PROJECT_TEMPLATE.md" ]; then
-    # Check if README.md exists and is the template version
-    if [ -f "README.md" ] && grep -q "init.sh" "README.md" 2>/dev/null; then
-        # Extra safety check: ensure it doesn't already contain replacements
-        if ! grep -q "$SNAKE_NAME\|$DASH_NAME\|$DISPLAY_NAME" "README.md" 2>/dev/null; then
-            print_info "README.md is the template version - renaming to README_REPO_TEMPLATE.md"
-            mv "README.md" "README_REPO_TEMPLATE.md" 2>/dev/null || true  # Overwrite if exists
-            print_success "Renamed README.md → README_REPO_TEMPLATE.md"
-
-            print_info "Moving README_PROJECT_TEMPLATE.md to README.md"
-            mv "scripts/README_PROJECT_TEMPLATE.md" "README.md"
-            print_success "Moved README_PROJECT_TEMPLATE.md → README.md"
-
-            # Process the new README.md with replacements
-            replace_in_file "README.md"
-        else
-            print_info "README.md appears to be already customized - leaving it unchanged"
-        fi
-    else
-        print_info "README.md is not the template version or doesn't exist - skipping README setup"
-    fi
-else
-    print_warning "README_PROJECT_TEMPLATE.md not found in scripts/"
-fi
+setup_readme_files
 
 # Rename the custom_components/plugin_template directory
 if [ -d "custom_components/plugin_template" ]; then
