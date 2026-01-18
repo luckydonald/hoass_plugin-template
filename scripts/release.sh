@@ -32,7 +32,7 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 # -------------------------------------------------
 . "${SCRIPT_DIR}/tmpl.sh"
 
-echo -e "${GREEN}🚀 Calendar Alarm Clock - Release Script${NC}"
+echo -e "${GREEN}🚀 Plugin Template - Release Script${NC}"
 echo ""
 
 # Check we're in the right directory
