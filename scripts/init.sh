@@ -537,6 +537,10 @@ FILES_TO_PROCESS=()
 [ -f "Makefile" ] && FILES_TO_PROCESS+=("Makefile")
 [ -f "README.md" ] && FILES_TO_PROCESS+=("README.md")
 
+# Add script files
+[ -f "scripts/commit.sh" ] && FILES_TO_PROCESS+=("scripts/commit.sh")
+[ -f "scripts/release.sh" ] && FILES_TO_PROCESS+=("scripts/release.sh")
+
 # Add all files in custom_components/plugin_template/ (if backend is kept)
 if [ "$KEEP_BACKEND" = true ] && [ -d "custom_components/plugin_template" ]; then
     # Add Python files
