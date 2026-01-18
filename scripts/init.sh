@@ -668,6 +668,26 @@ for file in "${FILES_TO_PROCESS[@]}"; do
     replace_in_file "$file"
 done
 
+# Handle README files
+print_info "Setting up README files..."
+
+if [ -f "README.md" ]; then
+    print_info "Renaming current README.md to README_REPO_TEMPLATE.md"
+    mv "README.md" "README_REPO_TEMPLATE.md"
+    print_success "Renamed README.md → README_REPO_TEMPLATE.md"
+fi
+
+if [ -f "scripts/README_PROJECT_TEMPLATE.md" ]; then
+    print_info "Moving README_PROJECT_TEMPLATE.md to README.md"
+    mv "scripts/README_PROJECT_TEMPLATE.md" "README.md"
+    print_success "Moved README_PROJECT_TEMPLATE.md → README.md"
+
+    # Process the new README.md with replacements
+    replace_in_file "README.md"
+else
+    print_warning "README_PROJECT_TEMPLATE.md not found in scripts/"
+fi
+
 # Rename the custom_components/plugin_template directory
 if [ -d "custom_components/plugin_template" ]; then
     if [ -d "custom_components/$SNAKE_NAME" ]; then
@@ -902,4 +922,3 @@ fi
 echo ""
 print_warning "Note: You may need to restart Home Assistant and clear browser cache"
 echo ""
-
