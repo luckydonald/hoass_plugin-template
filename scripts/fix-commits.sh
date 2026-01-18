@@ -191,11 +191,7 @@ echo ""
 print_info "Analyzing commits for potential squashing..."
 
 # Get list of commit hashes in this batch (oldest first)
-if [ "$IS_TEMPLATE_REPO" = true ]; then
-    COMMIT_HASHES=($(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse))
-else
-    COMMIT_HASHES=($(git log --format=%H --grep="ai: .*[.…].* ($STEP-" --reverse))
-fi
+COMMIT_HASHES=($(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse))
 
 # Array to track which commits to squash
 SQUASH_COMMITS=()
