@@ -265,3 +265,7 @@ No need to delete `scripts/README_PROJECT_TEMPLATE.md`.
 ———
 
 Hacs and Hassfest recommends to have the workflow run on `push`, on `pull_request` and on a schedule (weekly is fine).
+
+———
+
+Have `init.sh` fix `2026` to the current year. Replace `2026-2\d{3}`, too. As always, whitelist files.
