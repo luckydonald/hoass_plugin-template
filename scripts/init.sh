@@ -672,18 +672,23 @@ done
 print_info "Setting up README files..."
 
 if [ -f "README.md" ]; then
-    print_info "Renaming current README.md to README_REPO_TEMPLATE.md"
-    mv "README.md" "README_REPO_TEMPLATE.md"
-    print_success "Renamed README.md → README_REPO_TEMPLATE.md"
+    # Check if README.md still contains template patterns
+    if grep -q "plugin_template\|plugin-template\|PluginTemplate\|hoass_plugin-template" "README.md" 2>/dev/null; then
+        print_info "README.md contains template patterns - renaming to README_REPO_TEMPLATE.md"
+        mv "README.md" "README_REPO_TEMPLATE.md"
+        print_success "Renamed README.md → README_REPO_TEMPLATE.md"
+    else
+        print_info "README.md appears to be already customized - leaving it unchanged"
+    fi
 fi
 
 if [ -f "scripts/README_PROJECT_TEMPLATE.md" ]; then
-    print_info "Moving README_PROJECT_TEMPLATE.md to README.md"
-    mv "scripts/README_PROJECT_TEMPLATE.md" "README.md"
-    print_success "Moved README_PROJECT_TEMPLATE.md → README.md"
+    print_info "Creating README_GENERATED.md from README_PROJECT_TEMPLATE.md"
+    cp "scripts/README_PROJECT_TEMPLATE.md" "README_GENERATED.md"
+    print_success "Created README_GENERATED.md"
 
-    # Process the new README.md with replacements
-    replace_in_file "README.md"
+    # Process the new README_GENERATED.md with replacements
+    replace_in_file "README_GENERATED.md"
 else
     print_warning "README_PROJECT_TEMPLATE.md not found in scripts/"
 fi
