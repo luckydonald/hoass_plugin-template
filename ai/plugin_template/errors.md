@@ -419,3 +419,5 @@ You can fix the problem, and then run
 make: *** [fix-commits] Error 1
 
 ———
+
+Now it's having 0x the template prefix, when in template mode, instead of juuuust 1x the prefix.
