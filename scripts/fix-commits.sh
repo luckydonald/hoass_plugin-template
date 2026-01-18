@@ -580,14 +580,14 @@ FILE="$1"
 # Get the first non-comment, non-empty line
 FIRST_MSG=$(grep -v '^#' "$FILE" | grep -v '^$' | head -1)
 
-# If COMMIT_PREFIX is set and not already present, prepend it
+# Remove any leading *TEMPLATE | * (with or without emoji/whitespace)
+NORMALIZED_MSG=$(echo "$FIRST_MSG" | sed -E 's/^([[:space:]]*[[:graph:]]*TEMPLATE[[:space:]]*\|[[:space:]]*)//')
+
+# Always prepend the correct prefix if set
 if [ -n "$COMMIT_PREFIX" ]; then
-    case "$FIRST_MSG" in
-        "$COMMIT_PREFIX"*) echo "$FIRST_MSG" > "$FILE" ;;
-        *) echo "$COMMIT_PREFIX$FIRST_MSG" > "$FILE" ;;
-    esac
+    echo "$COMMIT_PREFIX$NORMALIZED_MSG" > "$FILE"
 else
-    echo "$FIRST_MSG" > "$FILE"
+    echo "$NORMALIZED_MSG" > "$FILE"
 fi
 EOFEDITOR
 
