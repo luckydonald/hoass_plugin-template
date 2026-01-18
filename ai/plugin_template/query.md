@@ -269,3 +269,8 @@ Hacs and Hassfest recommends to have the workflow run on `push`, on `pull_reques
 ———
 
 Have `init.sh` fix `2026` to the current year. Replace `2026-2\d{3}`, too. As always, whitelist files.
+
+———
+
+Have the `init.py` delete the `uv.lock` when it is also allowed to completely insert the backend code (but not on later runs)
+Similar, for the choosen frontend, `frontend_*/`: both yarn and npm lock files.
