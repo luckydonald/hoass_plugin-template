@@ -299,8 +299,8 @@ if [ ${#SQUASH_COMMITS[@]} -gt 0 ]; then
         echo ""
     done
 
-    read -p "Would you like to squash these commits? (y/n) [n]: " SQUASH_CHOICE
-    SQUASH_CHOICE=${SQUASH_CHOICE:-n}
+    read -p "Would you like to squash these commits? (y/n) [y]: " SQUASH_CHOICE
+    SQUASH_CHOICE=${SQUASH_CHOICE:-y}
 
     if [[ "$SQUASH_CHOICE" =~ ^[Yy]$ ]]; then
         print_info "Will squash the identified commits and adjust sub-numbering"
