@@ -595,7 +595,8 @@ chmod +x "$GIT_EDITOR_SCRIPT"
 
 # Set up environment for the rebase
 export GIT_SEQUENCE_EDITOR="$REBASE_EDITOR"
-export GIT_EDITOR="$GIT_EDITOR_SCRIPT"
+# Ensure COMMIT_PREFIX is available to the GIT_EDITOR_SCRIPT
+export GIT_EDITOR="env COMMIT_PREFIX='$COMMIT_PREFIX' $GIT_EDITOR_SCRIPT"
 
 # Run the rebase
 if git rebase -i "$REBASE_PARENT"; then
