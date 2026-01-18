@@ -219,3 +219,6 @@ When rebasing, tag the current HEAD with a tag to allow easy recovery. (somethin
 
 ————
 
+Multiple smaller changes:
+- `Delete the recovery tag for this rebase? (y/n) [y]: y` should default to no/`n`.
+
