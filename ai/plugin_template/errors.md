@@ -423,3 +423,6 @@ make: *** [fix-commits] Error 1
 Now it's having 0x the template prefix, when in template mode, instead of juuuust 1x the prefix.
 
 The squash is missing the prefix, too.
+
+I still end up with the squashed one being without prefix…
+I checked, the one put into the squash had the `TEMPLATE |` (similar) prefix.
