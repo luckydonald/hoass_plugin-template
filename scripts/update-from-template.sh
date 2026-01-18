@@ -165,7 +165,7 @@ continue_rebase() {
 
         # Add rebase details at the end
         echo "" >> "$message_file"
-        echo "Template rebase on $(date '+%Y-%m-%d %H:%M:%S') from $CURRENT_BRANCH to $TEMPLATE_REMOTE/mane ($(git rev-parse $TEMPLATE_REMOTE/mane))" >> "$message_file"
+        echo "🔄 Template rebase on $(date '+%Y-%m-%d %H:%M:%S') from $CURRENT_BRANCH to $TEMPLATE_REMOTE/mane ($(git rev-parse $TEMPLATE_REMOTE/mane))" >> "$message_file"
     fi
 
     # Prevent git from opening editor by setting GIT_EDITOR to true
