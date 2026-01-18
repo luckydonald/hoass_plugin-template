@@ -175,11 +175,11 @@ echo "  Frontend built successfully!"
 # Step 7: Bump version AFTER all tests pass
 echo ""
 echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
-sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/template/manifest.json
-rm -f custom_components/template/manifest.json.bak
+sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/plugin_template/manifest.json
+rm -f custom_components/plugin_template/manifest.json.bak
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
-git add custom_components/template/manifest.json
+git add custom_components/plugin_template/manifest.json
 git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
 echo "  Committed version bump"
 
@@ -230,4 +230,3 @@ echo "  https://github.com/luckydonald/hoass_plugin-template/releases/tag/v${NEW
 echo ""
 echo "Install via HACS:"
 echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_plugin-template&category=integration"
-
