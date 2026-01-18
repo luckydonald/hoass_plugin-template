@@ -254,3 +254,7 @@ make: *** [fix-commits] Error 1
 ———
 
 After running `init.sh`, it still says `📝 Plugin Template - Commit Script`
+
+———
+
+When in the post-init project, running `commit.sh` does report `Error: Must be run from the repository root`   - fix that for `release.sh` as well.
