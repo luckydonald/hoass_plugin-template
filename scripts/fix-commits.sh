@@ -400,25 +400,29 @@ rm -f "$QUERY_ERROR_SCRIPT.bak"
 # Find the parent commit (the commit before the first AI commit in this batch)
 # If there's a query/error commit, start from before that
 if [ -n "$QUERY_ERROR_COMMIT" ]; then
-    REBASE_PARENT=$(git rev-parse "$QUERY_ERROR_COMMIT^")
-else
-    if [ "$IS_TEMPLATE_REPO" = true ]; then
-        FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
-    else
-        FIRST_COMMIT=$(git log --format=%H --grep="ai: .*[.…].* ($STEP-" --reverse | head -1)
+    REBASE_PARENT=$(git rev-parse "$QUERY_ERROR_COMMIT^" 2>/dev/null)
+    if [ -z "$REBASE_PARENT" ]; then
+        print_error "Could not find parent commit for $QUERY_ERROR_COMMIT. Aborting."
+        exit 1
     fi
-    REBASE_PARENT=$(git rev-parse "$FIRST_COMMIT^")
+else
+    FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
+    if [ -z "$FIRST_COMMIT" ]; then
+        print_error "Could not find the first commit for step [$PADDED_STEP]. Aborting."
+        exit 1
+    fi
+    REBASE_PARENT=$(git rev-parse "$FIRST_COMMIT^" 2>/dev/null)
+    if [ -z "$REBASE_PARENT" ]; then
+        print_error "Could not find parent commit for $FIRST_COMMIT. Aborting."
+        exit 1
+    fi
 fi
 
 # Create a set of commits to modify (for fast lookup)
 COMMITS_TO_MODIFY=$(mktemp)
-trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT" EXIT
+trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
 
-if [ "$IS_TEMPLATE_REPO" = true ]; then
-    git log --format="%H" --grep="ai: \[$PADDED_STEP\]" > "$COMMITS_TO_MODIFY"
-else
-    git log --format="%H" --grep="ai: .*[.…].* ($STEP-" > "$COMMITS_TO_MODIFY"
-fi
+git log --format="%H" --grep="ai: \[$PADDED_STEP\]" > "$COMMITS_TO_MODIFY"
 
 # Add query/error commit to the list if it exists
 if [ -n "$QUERY_ERROR_COMMIT" ]; then
@@ -660,6 +664,4 @@ else
     print_info "To recover to the state before rebase: git reset --hard $RECOVERY_TAG"
     exit 1
 fi
-
-
 
