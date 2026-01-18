@@ -506,3 +506,7 @@ and the repository exists.
 ✗ Failed to fetch from ℹ Found preferred template remote: template (../hoass_template)
 template
 make: *** [rebase-template] Error 1
+
+———
+The rebase script seems to do the right decisions, however, it still opens the editor for every commit to change the message, instead of doing it automatically. Automatically means: use the provided message, but uncomment the merge details (remove leading `#`).
+
