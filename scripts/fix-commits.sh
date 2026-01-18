@@ -135,24 +135,68 @@ PADDED_STEP=$(printf "%03d" "$STEP")
 
 print_info "Found AI commits for step [$PADDED_STEP]"
 
-# Count commits in this batch
-COMMIT_COUNT=$(git log --format=%s --grep="ai: \[$PADDED_STEP\]" | wc -l | tr -d ' ')
+# Find all consecutive commits with the same step number, stopping at query/error or different steps
+COMMIT_HASHES=()
+COMMIT_COUNT=0
+
+# Start from the last AI commit and walk backwards
+CURRENT_COMMIT=$(git log --format=%H -1 --grep="ai: \[$PADDED_STEP\]")
+
+while [ -n "$CURRENT_COMMIT" ]; do
+    # Check if this commit has the correct step number
+    COMMIT_MSG=$(git log --format=%s -1 "$CURRENT_COMMIT")
+    if echo "$COMMIT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
+        # This is part of our batch
+        COMMIT_HASHES=("$CURRENT_COMMIT" "${COMMIT_HASHES[@]}")
+        COMMIT_COUNT=$((COMMIT_COUNT + 1))
+
+        # Get the parent commit
+        PARENT_COMMIT=$(git rev-parse "$CURRENT_COMMIT^" 2>/dev/null)
+        if [ -z "$PARENT_COMMIT" ]; then
+            # No more parents, stop
+            break
+        fi
+
+        # Check the parent's message
+        PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
+
+        # Stop if parent is a query/error update
+        if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
+            print_info "Stopping at query/error commit: $PARENT_MSG"
+            break
+        fi
+
+        # Stop if parent is a different AI step
+        if echo "$PARENT_MSG" | grep -q "ai: \[[0-9]\+\]" && ! echo "$PARENT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
+            print_info "Stopping at different AI step: $PARENT_MSG"
+            break
+        fi
+
+        # Continue with parent
+        CURRENT_COMMIT="$PARENT_COMMIT"
+    else
+        # This commit doesn't match our step, stop
+        break
+    fi
+done
 
 if [ "$COMMIT_COUNT" -eq 0 ]; then
     print_error "No commits found for step [$PADDED_STEP]"
     exit 1
 fi
 
-print_success "Found $COMMIT_COUNT commit(s) in this batch"
+print_success "Found $COMMIT_COUNT commit(s) in this connected batch"
 
 # Show the commits
 echo ""
 echo "Commits to fix:"
-git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse
+for commit_hash in "${COMMIT_HASHES[@]}"; do
+    git log --oneline -1 "$commit_hash"
+done
 echo ""
 
 # Check if this batch was preceded by a query/error update
-FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
+FIRST_COMMIT="${COMMIT_HASHES[0]}"
 PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
 PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
 
@@ -189,9 +233,6 @@ echo ""
 
 # Analyze commits for potential squashing
 print_info "Analyzing commits for potential squashing..."
-
-# Get list of commit hashes in this batch (oldest first)
-COMMIT_HASHES=($(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse))
 
 # Array to track which commits to squash
 SQUASH_COMMITS=()
@@ -419,7 +460,7 @@ if [ -n "$QUERY_ERROR_COMMIT" ]; then
         exit 1
     fi
 else
-    FIRST_COMMIT=$(git log --format=%H --grep="ai: \[$PADDED_STEP\]" --reverse | head -1)
+    FIRST_COMMIT="${COMMIT_HASHES[0]}"
     if [ -z "$FIRST_COMMIT" ]; then
         print_error "Could not find the first commit for step [$PADDED_STEP]. Aborting."
         exit 1
@@ -435,7 +476,10 @@ fi
 COMMITS_TO_MODIFY=$(mktemp)
 trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
 
-git log --format="%H" --grep="ai: \[$PADDED_STEP\]" > "$COMMITS_TO_MODIFY"
+# Add all commits from our batch
+for commit_hash in "${COMMIT_HASHES[@]}"; do
+    echo "$commit_hash" >> "$COMMITS_TO_MODIFY"
+done
 
 # Add query/error commit to the list if it exists
 if [ -n "$QUERY_ERROR_COMMIT" ]; then
