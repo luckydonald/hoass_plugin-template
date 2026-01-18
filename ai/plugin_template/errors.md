@@ -429,3 +429,16 @@ I checked, the one put into the squash had the `TEMPLATE |` (similar) prefix.
 
 Nope, no prefix.
 Nope, still not the prefix. What is going on?!?
+
+———
+
+✓ Created recovery tag: fix-commits-backup-step-048-20260118
+ℹ If something goes wrong, you can recover with: git reset --hard fix-commits-backup-step-048-20260118
+
+error: cannot rebase: You have unstaged changes.
+error: Please commit or stash them.
+✗ Rebase failed or was aborted
+ℹ You can continue with: git rebase --continue
+ℹ Or abort with: git rebase --abort
+ℹ To recover to the state before rebase: git reset --hard fix-commits-backup-step-048-20260118
+make: *** [fix-commits] Error 1
