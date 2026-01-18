@@ -47,7 +47,7 @@ print_success() {
 
 # Function to get current timestamp for template variables
 get_timestamp() {
-    date +"%Y-%m-%d_%H-%M-%S"
+    date +"%Y-%m-%d-%H-%M-%S"
 }
 
 # Function to detect TEMPLATE_REMOTE
@@ -59,7 +59,8 @@ detect_template_remote() {
     for name in "${preferred_names[@]}"; do
         if git remote | grep -q "^${name}$"; then
             template_remote="$name"
-            print_info "Found preferred template remote: $template_remote"
+            local remote_url=$(git remote get-url "$name" 2>/dev/null || echo "unknown")
+            print_info "Found preferred template remote: $template_remote ($remote_url)"
             break
         fi
     done
@@ -81,7 +82,8 @@ detect_template_remote() {
         while IFS= read -r remote; do
             if [[ "$remote" =~ \btemplate\b ]]; then
                 template_remote="$remote"
-                print_info "Found template remote by name pattern: $template_remote"
+                local remote_url=$(git remote get-url "$remote" 2>/dev/null || echo "unknown")
+                print_info "Found template remote by name pattern: $template_remote ($remote_url)"
                 break
             fi
         done < <(git remote)
