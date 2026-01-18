@@ -540,3 +540,19 @@ make: *** [rebase-template] Error 1
 maybe the file I merged was not automatically added to git from the script?
 PS: retry if it fails due to that error, so I can continue editing if something with the resolved file is not right.
  Also, if it's juuuust that I forgot to add the file (but it's no longer a diff), just add it automatically instead of failing.
+
+————
+➜ make release
+Script directory: /Users/user/Documents/programming/Python/HomeAssistant/hoass_state-cycler/scripts
+🚀 State Cycler - Release Script
+
+Error: scripts/init.json not found!
+Please run 'make init' or './scripts/init.sh' first to initialize the project.
+No existing version tags found, starting at v0.0.0-pre1
+Current version: v0.0.0-pre0
+New version: v0.0.0-pre1
+
+Proceed with release? (Y/n) n
+Aborted.
+
+-> `release.sh` should actually abort if the json file can not be loaded (probably the exit state of the python script is not checked/set?)
