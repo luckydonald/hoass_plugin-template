@@ -428,3 +428,4 @@ I still end up with the squashed one being without prefix…
 I checked, the one put into the squash had the `TEMPLATE |` (similar) prefix.
 
 Nope, no prefix.
+Nope, still not the prefix. What is going on?!?
