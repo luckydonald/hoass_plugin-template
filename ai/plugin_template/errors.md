@@ -446,3 +446,9 @@ make: *** [fix-commits] Error 1
 ———
 
 Fix `PLUGIN-TEMPLATE-CARD` not being replaced in `main.ts`.
+
+———
+
+ℹ README.md is not the template version or doesn't exist - skipping README setup 
+
+If it does not exist, continue. We can surely "over"write a non-exisiting file.
