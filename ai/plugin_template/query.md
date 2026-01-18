@@ -219,6 +219,10 @@ When rebasing, tag the current HEAD with a tag to allow easy recovery. (somethin
 
 ————
 
-Multiple smaller changes:
-- `Delete the recovery tag for this rebase? (y/n) [y]: y` should default to no/`n`.
+`Delete the recovery tag for this rebase? (y/n) [y]: y` should default to no/`n`.
 
+———
+
+Actually, I like the format of the template commits.
+Use that for the end-user commits as well.
+Put the TEMPLATE prefix to the echo statement, instead of the template-string itself. Can be a replacer or string concat, whichever is easier.
