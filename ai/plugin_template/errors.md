@@ -536,3 +536,7 @@ Press Enter after resolving conflicts manually, or 'a' to abort:
 ℹ Continuing rebase after manual resolution...
 sed: 1: ".git/rebase-merge/message": invalid command code .
 make: *** [rebase-template] Error 1
+
+maybe the file I merged was not automatically added to git from the script?
+PS: retry if it fails due to that error, so I can continue editing if something with the resolved file is not right.
+ Also, if it's juuuust that I forgot to add the file (but it's no longer a diff), just add it automatically instead of failing.
