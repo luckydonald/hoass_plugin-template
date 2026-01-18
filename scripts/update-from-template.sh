@@ -47,7 +47,7 @@ print_success() {
 
 # Function to get current timestamp for template variables
 get_timestamp() {
-    date +"%Y-%m-%d-%H-%M-%S"
+    date +"%Y-%m-%d_%H-%M-%S"
 }
 
 # Function to detect TEMPLATE_REMOTE
