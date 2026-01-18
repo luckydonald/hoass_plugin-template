@@ -49,12 +49,10 @@ echo -e "${GREEN}📝 Plugin Template - Commit Script${NC}"
 echo ""
 
 # Check we're in the right directory
-if \
-  [ ! -f "custom_components/plugin_template/manifest.json" ] \
-  && [ ! -f "frontend{,_vue,_plain}/src/main.ts" ] \
-  && [ ! -f "frontend{,_vue,_plain}/package.json" ] \
-; then
+# Look for any of: custom_components/*/manifest.json, frontend/, scripts/ directory, or hacs.json
+if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" ] && [ ! -f "hacs.json" ]; then
     echo -e "${RED}Error: Must be run from the repository root${NC}"
+    echo "Expected to find: custom_components/, frontend/, or hacs.json"
     exit 1
 fi
 

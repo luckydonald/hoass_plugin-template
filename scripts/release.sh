@@ -36,8 +36,10 @@ echo -e "${GREEN}🚀 Calendar Alarm Clock - Release Script${NC}"
 echo ""
 
 # Check we're in the right directory
-if [ ! -f "custom_components/plugin_template/manifest.json" ]; then
+# Look for custom_components directory with any subdirectory containing manifest.json, or hacs.json
+if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" ] && [ ! -f "hacs.json" ]; then
     echo -e "${RED}Error: Must be run from the repository root${NC}"
+    echo "Expected to find: custom_components/, frontend/, or hacs.json"
     exit 1
 fi
 
