@@ -56,9 +56,9 @@ if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standar
 fi
 
 # Get current version from latest git tag
-CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+CURRENT_VERSION=$(git tag --list 'v*' --sort=-version:refname | head -n 1 | sed 's/^v//')
 if [ -z "$CURRENT_VERSION" ]; then
-    echo -e "${YELLOW}No existing tags found, starting at v0.0.0-pre1${NC}"
+    echo -e "${YELLOW}No existing version tags found, starting at v0.0.0-pre1${NC}"
     CURRENT_VERSION="0.0.0-pre0"
 fi
 echo -e "Current version: ${YELLOW}v${CURRENT_VERSION}${NC}"
