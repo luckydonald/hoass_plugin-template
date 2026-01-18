@@ -138,9 +138,11 @@ continue_rebase() {
         # Uncomment conflict details (remove leading # from conflict lines)
         sed -i 's/^# Conflicts:/Conflicts:/' "$message_file"
         sed -i 's/^# \t/\t/' "$message_file"  # Uncomment indented conflict file lines
+        sed -i 's/^# /\t/' "$message_file"   # Also handle space instead of tab
     fi
 
-    if git rebase --continue; then
+    # Prevent git from opening editor by setting GIT_EDITOR to true
+    if GIT_EDITOR=true git rebase --continue; then
         print_success "Rebase continued successfully"
         return 0
     else
@@ -184,7 +186,7 @@ handle_conflicts() {
 
     if [ "$has_auto_resolvable" = true ]; then
         print_info "Attempting auto-resolution..."
-        if git add -A && git rebase --continue; then
+        if git add -A && GIT_EDITOR=true git rebase --continue; then
             print_success "Conflicts auto-resolved"
             return 0
         fi
