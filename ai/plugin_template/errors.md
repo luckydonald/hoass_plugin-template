@@ -452,3 +452,13 @@ Fix `PLUGIN-TEMPLATE-CARD` not being replaced in `main.ts`.
 ℹ README.md is not the template version or doesn't exist - skipping README setup 
 
 If it does not exist, continue. We can surely "over"write a non-exisiting file.
+
+———
+
+The `release.sh` script fails with:
+
+```txt
+Current version: vfix-commits-backup-step-047_2026-01-18_17-32-56
+Error: Cannot parse version 'fix-commits-backup-step-047_2026-01-18_17-32-56'
+```
+It should ignore non-version tags (version tags will always start with `^v\d+`).
