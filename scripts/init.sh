@@ -172,12 +172,12 @@ setup_readme_files() {
         return
     fi
 
-    if [ ! -f "README.md" ] || ! grep -q "init.sh" "README.md" 2>/dev/null; then
-        print_info "README.md is not the template version or doesn't exist - skipping README setup"
+    if [ -f "README.md" ] && ! grep -q "init.sh" "README.md" 2>/dev/null; then
+        print_info "README.md exists but is not the template version - skipping README setup"
         return
     fi
 
-    if grep -q "$SNAKE_NAME\|$DASH_NAME\|$DISPLAY_NAME" "README.md" 2>/dev/null; then
+    if [ -f "README.md" ] && grep -q "$SNAKE_NAME\|$DASH_NAME\|$DISPLAY_NAME" "README.md" 2>/dev/null; then
         print_info "README.md appears to be already customized - leaving it unchanged"
         return
     fi
