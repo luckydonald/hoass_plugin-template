@@ -263,3 +263,80 @@ When in the post-init project, running `commit.sh` does report `Error: Must be r
 
 On the second run with the `init.sh` I can't select the vue folder- just the none one, as the folder was renamed.
 But that means that my vue specific files get deleted.
+
+———
+
+➜ make commit-fix
+
+===================================================
+Fix AI Commit Messages
+===================================================
+
+ℹ Scanning for AI commit batches...
+ℹ Found AI commits for step [002]
+✓ Found 8 commit(s) in this batch
+
+Commits to fix:
+53fd3ed 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (/5)
+6b60837 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (2/5)
+328da8a 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (3/5)
+14970e1 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (4/5)
+4d313cc 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (5/5)
+d5e02a2 ✨ ai: [002] running… (1/X)
+313db89 ✨ ai: [002] running… (2/X)
+4e2a890 (HEAD -> mane) ✨ ai: [002] running… (3/X)
+
+
+ℹ Enter a message for all commits in this batch
+⚠ Leave empty to keep individual 'running…' messages
+⚠ Press Ctrl+C to cancel
+
+Message for step [002]: repair broken files…
+
+ℹ Analyzing commits for potential squashing...
+
+ℹ Found commits that could potentially be squashed:
+
+  Commits 2 and 3:
+    [2] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (2/5)
+    [3] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (3/5)
+    Files in [2]: custom_components/plugin_template/sensor.py
+    Files in [3]: Makefile,custom_components/plugin_template/services.py,frontend_vue/src/AlarmClockCard.vue
+
+  Commits 3 and 4:
+    [3] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (3/5)
+    [4] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (4/5)
+    Files in [3]: Makefile,custom_components/plugin_template/services.py,frontend_vue/src/AlarmClockCard.vue
+    Files in [4]: frontend_vue/package.json,frontend_vue/src/AlarmClockCard.vue,frontend_vue/src/main.ts
+
+  Commits 4 and 5:
+    [4] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (4/5)
+    [5] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (5/5)
+    Files in [4]: frontend_vue/package.json,frontend_vue/src/AlarmClockCard.vue,frontend_vue/src/main.ts
+    Files in [5]: frontend_vue/src/main.ts
+
+  Commits 5 and 6:
+    [5] 📄TEMPLATE | ✨ ai: [002] Replace existing names with `plugin-template`… (5/5)
+    [6] ✨ ai: [002] running… (1/X)
+    Files in [5]: frontend_vue/src/main.ts
+    Files in [6]: frontend/src/StateCyclerCard.vue
+
+  Commits 6 and 7:
+    [6] ✨ ai: [002] running… (1/X)
+    [7] ✨ ai: [002] running… (2/X)
+    Files in [6]: frontend/src/StateCyclerCard.vue
+    Files in [7]: frontend/src/StateCyclerCard.vue
+
+  Commits 7 and 8:
+    [7] ✨ ai: [002] running… (2/X)
+    [8] ✨ ai: [002] running… (3/X)
+    Files in [7]: frontend/src/StateCyclerCard.vue
+    Files in [8]: frontend/src/main.ts
+
+Would you like to squash these commits? (y/n) [y]: y
+ℹ Will squash the identified commits and adjust sub-numbering
+
+fatal: ambiguous argument '^': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+make: *** [fix-commits] Error 128
