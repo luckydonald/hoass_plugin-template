@@ -125,7 +125,22 @@ continue_rebase() {
     fi
 
     print_info "Continuing rebase after manual resolution..."
-    if git add -A && git rebase --continue; then
+
+    # Uncomment merge details in the commit message
+    local message_file=""
+    if [ -d ".git/rebase-merge" ]; then
+        message_file=".git/rebase-merge/message"
+    elif [ -d ".git/rebase-apply" ]; then
+        message_file=".git/rebase-apply/message"
+    fi
+
+    if [ -n "$message_file" ] && [ -f "$message_file" ]; then
+        # Uncomment conflict details (remove leading # from conflict lines)
+        sed -i 's/^# Conflicts:/Conflicts:/' "$message_file"
+        sed -i 's/^# \t/\t/' "$message_file"  # Uncomment indented conflict file lines
+    fi
+
+    if git rebase --continue; then
         print_success "Rebase continued successfully"
         return 0
     else
