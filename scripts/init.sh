@@ -541,6 +541,13 @@ FILES_TO_PROCESS=()
 [ -f "scripts/commit.sh" ] && FILES_TO_PROCESS+=("scripts/commit.sh")
 [ -f "scripts/release.sh" ] && FILES_TO_PROCESS+=("scripts/release.sh")
 
+# Add .github workflow files
+if [ -d ".github/workflows" ]; then
+    while IFS= read -r -d '' file; do
+        FILES_TO_PROCESS+=("$file")
+    done < <(find .github/workflows -type f \( -name "*.yml" -o -name "*.yaml" \) -print0)
+fi
+
 # Add all files in custom_components/plugin_template/ (if backend is kept)
 if [ "$KEEP_BACKEND" = true ] && [ -d "custom_components/plugin_template" ]; then
     # Add Python files
