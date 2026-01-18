@@ -8,6 +8,7 @@
 # recovery options.
 #
 # Usage:
+#   chmod +x scripts/update-from-template.sh
 #   ./scripts/update-from-template.sh
 #
 # ============================================================================
