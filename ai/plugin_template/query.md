@@ -251,3 +251,11 @@ Also make sure the `init.sh` script handles `README_PROJECT_TEMPLATE.md`. For th
 Make sure it's re-run-safe.
 That means not overwriting a already replaced `README.md`
 You shall name it to `README_GENERATED.md` instead of overwriting.
+It should:
+- check if there's `README_PROJECT_TEMPLATE.md`
+- and check if `README.md` mentions `init.sh` (then it's the template one)
+- and check if `README.md` does not contain any replacements calculated (e.g. the new plugin name; just to be extra safe)
+If all those conditions are met:
+- rename `README.md` to `README_REPO_TEMPLATE.md` (overwrite if already existing)
+- rename `README_PROJECT_TEMPLATE.md` to `README.md`
+- do the replacements in `README.md`
