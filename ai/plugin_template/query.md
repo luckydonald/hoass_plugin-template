@@ -243,3 +243,4 @@ In `init.sh`, combine the sed commands which are shared between `$REPLACE_AUTHOR
 ———
 
 In `scripts/fix-commits.sh`, make sure to only rename and/or squash connected blocks of commits, i.e. those with the same $step number. If an query/error update or a different $step number is found in-between, stop there.
+Also make sure that it is also displaying only those correctly in `print_info "Updated commits:"`
