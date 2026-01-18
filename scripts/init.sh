@@ -329,13 +329,20 @@ print_info "\nStep 7: Frontend Framework"
 echo "Choose your frontend framework:"
 
 # Check which frontend directories exist
+# On first run: frontend_vue/ exists
+# On re-run: frontend/ exists (already renamed)
 HAS_VUE=false
 HAS_PLAIN=false
 [ -d "frontend_vue" ] && HAS_VUE=true
+[ -d "frontend" ] && HAS_VUE=true  # Already initialized
 [ -d "frontend_plain" ] && HAS_PLAIN=true
 
 if [ "$HAS_VUE" = true ]; then
-    echo "  vue   - Vue.js framework (from frontend_vue/)"
+    if [ -d "frontend_vue" ]; then
+        echo "  vue   - Vue.js framework (from frontend_vue/)"
+    else
+        echo "  vue   - Vue.js framework (keep existing frontend/)"
+    fi
 fi
 # Uncomment when frontend_plain is implemented:
 # if [ "$HAS_PLAIN" = true ]; then
@@ -366,7 +373,7 @@ FRONTEND_CHOICE=${FRONTEND_CHOICE:-$DEFAULT_FRONTEND}
 
 # Validate choice
 if [[ "$FRONTEND_CHOICE" == "vue" && "$HAS_VUE" = false ]]; then
-    print_error "frontend_vue/ directory does not exist"
+    print_error "frontend_vue/ or frontend/ directory does not exist"
     exit 1
 # Uncomment when frontend_plain is implemented:
 # elif [[ "$FRONTEND_CHOICE" == "plain" && "$HAS_PLAIN" = false ]]; then
