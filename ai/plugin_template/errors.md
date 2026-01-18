@@ -486,3 +486,23 @@ template
 make: *** [rebase-template] Error 1
 ```
 I belive it's due to the remote being a directory path (would be helpful if you show the repository URL of the remote name somewhere).
+
+———
+➜ make template-rebase
+
+===================================================
+Home Assistant Plugin Template Update
+===================================================
+
+✓ Using template remote: ℹ Found preferred template remote: template (../hoass_template)
+template
+ℹ Fetching from ℹ Found preferred template remote: template (../hoass_template)
+template...
+hostname contains invalid characters
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+✗ Failed to fetch from ℹ Found preferred template remote: template (../hoass_template)
+template
+make: *** [rebase-template] Error 1
