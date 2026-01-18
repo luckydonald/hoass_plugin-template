@@ -244,3 +244,10 @@ In `init.sh`, combine the sed commands which are shared between `$REPLACE_AUTHOR
 
 In `scripts/fix-commits.sh`, make sure to only rename and/or squash connected blocks of commits, i.e. those with the same $step number. If an query/error update or a different $step number is found in-between, stop there.
 Also make sure that it is also displaying only those correctly in `print_info "Updated commits:"`
+
+———
+
+Also make sure the `init.sh` script handles `README_PROJECT_TEMPLATE.md`. For that the current `README.md` shall be renamed to  `README_REPO_TEMPLATE.md`, and the `README_PROJECT_TEMPLATE.md` shall take its place, with the necessary string replacements.
+Make sure it's re-run-safe.
+That means not overwriting a already replaced `README.md`
+You shall name it to `README_GENERATED.md` instead of overwriting.
