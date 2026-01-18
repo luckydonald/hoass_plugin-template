@@ -467,3 +467,22 @@ It should ignore non-version tags (version tags will always start with `^v\d+`).
 
 Missing pathes to replace with `init.sh`:
 - `release.sh` causes `sed: custom_components/template/manifest.json: No such file or directory` - template should be plugin_template, and replaced?
+
+———
+Issues with `update-from-template.sh`:
+```txt
+➜ make template-rebase
+✓ Using template remote: ℹ Found preferred template remote: template
+template
+ℹ Fetching from ℹ Found preferred template remote: template
+template...
+hostname contains invalid characters
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+✗ Failed to fetch from ℹ Found preferred template remote: template
+template
+make: *** [rebase-template] Error 1
+```
+I belive it's due to the remote being a directory path (would be helpful if you show the repository URL of the remote name somewhere).
