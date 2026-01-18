@@ -35,6 +35,14 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 echo -e "${GREEN}🚀 Plugin Template - Release Script${NC}"
 echo ""
 
+# Load project settings
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}Error: python3 not found${NC}"
+    exit 1
+fi
+
+eval "$(python3 scripts/get_project_settings.py)"
+
 # Check we're in the right directory
 # Look for custom_components directory with any subdirectory containing manifest.json, or hacs.json
 if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" ] && [ ! -f "hacs.json" ]; then
@@ -175,11 +183,11 @@ echo "  Frontend built successfully!"
 # Step 7: Bump version AFTER all tests pass
 echo ""
 echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
-sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/plugin_template/manifest.json
-rm -f custom_components/plugin_template/manifest.json.bak
+sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "custom_components/${SNAKE_NAME}/manifest.json"
+rm -f "custom_components/${SNAKE_NAME}/manifest.json.bak"
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
-git add custom_components/plugin_template/manifest.json
+git add "custom_components/${SNAKE_NAME}/manifest.json"
 git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
 echo "  Committed version bump"
 
