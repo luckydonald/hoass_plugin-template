@@ -184,11 +184,7 @@ print_info "Enter a message for all commits in this batch"
 print_warning "Leave empty to keep individual 'running…' messages"
 print_warning "Press Ctrl+C to cancel"
 echo ""
-if [ "$IS_TEMPLATE_REPO" = true ]; then
-    read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
-else
-    read -p "Message for step [$STEP]: " BATCH_MESSAGE
-fi
+read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
 echo ""
 
 # Analyze commits for potential squashing
