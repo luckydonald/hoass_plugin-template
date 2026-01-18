@@ -188,7 +188,7 @@ setup_readme_files() {
 
     print_info "Moving README_PROJECT_TEMPLATE.md to README.md"
     cp "scripts/README_PROJECT_TEMPLATE.md" "README.md"
-    print_success "Copied README_PROJECT_TEMPLATE.md → README.md"
+    print_success "Copied /scripts/README_PROJECT_TEMPLATE.md → /README.md"
 
     # Process the new README.md with replacements
     replace_in_file "README.md"
