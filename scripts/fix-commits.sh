@@ -741,8 +741,8 @@ if git rebase -i "$REBASE_PARENT"; then
 
     # Also delete the current recovery tag now that rebase succeeded
     echo ""
-    read -p "Delete the recovery tag for this rebase? (y/n) [y]: " DELETE_CURRENT
-    DELETE_CURRENT=${DELETE_CURRENT:-y}
+    read -p "Delete the recovery tag for this rebase? (y/n) [n]: " DELETE_CURRENT
+    DELETE_CURRENT=${DELETE_CURRENT:-n}
 
     if [[ "$DELETE_CURRENT" =~ ^[Yy]$ ]]; then
         if git tag -d "$RECOVERY_TAG" 2>/dev/null; then
