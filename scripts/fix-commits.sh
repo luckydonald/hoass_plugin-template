@@ -348,9 +348,11 @@ fi
 
 # Reconstruct the commit message with total
 PADDED_STEP=$(printf "%03d" "$STEP")
-# Only add prefix if not already present
-if [ -n "$COMMIT_PREFIX_PLACEHOLDER" ] && [[ ! "$NEW_MSG" =~ ^$COMMIT_PREFIX_PLACEHOLDER ]]; then
-    echo "$COMMIT_PREFIX_PLACEHOLDER✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
+if [ -n "$COMMIT_PREFIX" ]; then
+    case "$NEW_MSG" in
+        "$COMMIT_PREFIX"*) echo "$NEW_MSG" ;;
+        *) echo "$COMMIT_PREFIX✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)" ;;
+    esac
 else
     echo "✨ ai: [$PADDED_STEP] $NEW_MSG ($SUBSTEP/$TOTAL)"
 fi
@@ -364,11 +366,6 @@ if [ "$DO_SQUASH" = true ]; then
 else
     sed -i.bak "s/TOTAL_PLACEHOLDER/$COMMIT_COUNT/g" "$REBASE_SCRIPT"
 fi
-
-# Replace COMMIT_PREFIX_PLACEHOLDER with actual prefix (empty string or TEMPLATE prefix)
-# Need to escape the prefix for sed
-ESCAPED_PREFIX=$(echo "$COMMIT_PREFIX" | sed 's/[\/&]/\\&/g')
-sed -i.bak "s/COMMIT_PREFIX_PLACEHOLDER/$ESCAPED_PREFIX/g" "$REBASE_SCRIPT"
 
 rm -f "$REBASE_SCRIPT.bak"
 
@@ -393,9 +390,11 @@ else
     # No batch message, keep as-is but ensure prefix is correct
     NEW_MSG="$CURRENT_MSG"
 fi
-# Only add prefix if not already present
-if [ -n "$COMMIT_PREFIX_PLACEHOLDER" ] && [[ ! "$NEW_MSG" =~ ^$COMMIT_PREFIX_PLACEHOLDER ]]; then
-    echo "$COMMIT_PREFIX_PLACEHOLDER$NEW_MSG"
+if [ -n "$COMMIT_PREFIX" ]; then
+    case "$NEW_MSG" in
+        "$COMMIT_PREFIX"*) echo "$NEW_MSG" ;;
+        *) echo "$COMMIT_PREFIX$NEW_MSG" ;;
+    esac
 else
     echo "$NEW_MSG"
 fi
