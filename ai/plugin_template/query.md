@@ -212,3 +212,10 @@ Update `init.sh` to, in the summary, write:
 - Frontend:         vue
 + Frontend:         yes, vue
 ```
+
+————
+
+When rebasing, tag the current HEAD with a tag to allow easy recovery. (something containing the $step?) Use a templating var so I can easily change the tag name. After being successful check for tags no longer in the main branch but NOT the current one, and clean those up (with confirmation)
+
+————
+
