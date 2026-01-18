@@ -164,3 +164,7 @@ rebase-template:
 	@./scripts/update-from-template.sh
 
 template-rebase: rebase-template
+
+%:
+	@echo "Unknown target '$@'. Showing help:"
+	@$(MAKE) help
