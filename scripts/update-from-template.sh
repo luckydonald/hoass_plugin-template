@@ -124,6 +124,12 @@ continue_rebase() {
         return 1
     fi
 
+    # Check if conflicts are still unresolved
+    if git diff --name-only --diff-filter=U 2>/dev/null | grep -q .; then
+        print_error "Conflicts are still present. Please resolve all conflicts and stage the files with 'git add <file>' before continuing."
+        return 1
+    fi
+
     print_info "Continuing rebase after manual resolution..."
 
     # Uncomment merge details in the commit message
