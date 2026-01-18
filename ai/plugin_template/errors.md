@@ -346,3 +346,76 @@ make: *** [fix-commits] Error 128
 Now it results in `📄TEMPLATE | 📄TEMPLATE | 🐞 ai: updated errors: fix squash…`, a doubled prefix
 
 ———
+
+03:07:06 with user in Python/HomeAssistant/hoass_template on  mane [⇡] via 🐍 3.12.4 on 🐳 v28.1.1 (middlepip-ssh) via hoass_template 
+➜ make commit-fix
+
+===================================================
+Fix AI Commit Messages
+===================================================
+
+ℹ Template repository detected
+ℹ Scanning for AI commit batches...
+ℹ Found AI commits for step [042]
+✓ Found 1 commit(s) in this batch
+
+Commits to fix:
+b685601 (HEAD -> mane) 📄TEMPLATE | ✨ ai: [042] running… (1/X)
+
+ℹ This batch was preceded by: 📄TEMPLATE | 🐞 ai: updated errors
+
+ℹ Changes in that commit:
+
+commit 036ee05563f93684608ad472541a15816b6badd5
+Author: luckydonald <m1-mac-2024._.code@luckydonald.de>
+Date:   Sun Jan 18 03:06:38 2026 +0100
+
+    📄TEMPLATE | 🐞 ai: updated errors
+
+diff --git a/ai/plugin_template/errors.md b/ai/plugin_template/errors.md
+index e4d8c39..874aa33 100644
+--- a/ai/plugin_template/errors.md
++++ b/ai/plugin_template/errors.md
+@@ -340,3 +340,9 @@ fatal: ambiguous argument '^': unknown revision or path not in the working tree.
+ Use '--' to separate paths from revisions, like this:
+ 'git <command> [<revision>...] -- [<file>...]'
+ make: *** [fix-commits] Error 128
++
++———
++
++Now it results in `📄TEMPLATE | 📄TEMPLATE | 🐞 ai: updated errors: fix squash…`, a doubled prefix
++
++———
+
+
+ℹ Enter a message for all commits in this batch
+⚠ Leave empty to keep individual 'running…' messages
+⚠ Press Ctrl+C to cancel
+
+Message for step [042]: Fix double template-prefix…
+
+ℹ Analyzing commits for potential squashing...
+ℹ No squashing opportunities found (commits modify overlapping lines)
+
+ℹ Starting interactive rebase...
+
+✓ Created recovery tag: fix-commits-backup-step-042-20260118
+ℹ If something goes wrong, you can recover with: git reset --hard fix-commits-backup-step-042-20260118
+
+Executing: BATCH_MSG_ENV="$BATCH_MSG_ENV" /var/folders/jv/xthv_j4x7xx6rg_dgpyypqcr0000gn/T/tmp.A3KAlKYvx1 '📄TEMPLATE | 🐞 ai: updated errors' > /tmp/new_msg_036ee05.txt
+/var/folders/jv/xthv_j4x7xx6rg_dgpyypqcr0000gn/T/tmp.A3KAlKYvx1: line 16: syntax error in conditional expression: unexpected token `|'
+/var/folders/jv/xthv_j4x7xx6rg_dgpyypqcr0000gn/T/tmp.A3KAlKYvx1: line 16: syntax error near `|'
+/var/folders/jv/xthv_j4x7xx6rg_dgpyypqcr0000gn/T/tmp.A3KAlKYvx1: line 16: `if [ -n "$📄TEMPLATE | " ] && [[ ! "$NEW_MSG" =~ ^$📄TEMPLATE |  ]]; then'
+warning: execution failed: BATCH_MSG_ENV="$BATCH_MSG_ENV" /var/folders/jv/xthv_j4x7xx6rg_dgpyypqcr0000gn/T/tmp.A3KAlKYvx1 '📄TEMPLATE | 🐞 ai: updated errors' > /tmp/new_msg_036ee05.txt
+You can fix the problem, and then run
+
+  git rebase --continue
+
+
+✗ Rebase failed or was aborted
+ℹ You can continue with: git rebase --continue
+ℹ Or abort with: git rebase --abort
+ℹ To recover to the state before rebase: git reset --hard fix-commits-backup-step-042-20260118
+make: *** [fix-commits] Error 1
+
+———
