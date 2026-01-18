@@ -231,3 +231,9 @@ Put the TEMPLATE prefix to the echo statement, instead of the template-string it
 
 I've added `.github` (from `../../../hoass_calendar-alarm-clock/.github`) to the template repo.
 Make sure `init.sh` copies that over as well, and that plugin names are replaced with our placeholders, "plugin-template" or similar.
+
+———
+
+Make merging commits the default option.
+
+
