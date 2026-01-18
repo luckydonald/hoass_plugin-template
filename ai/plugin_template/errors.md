@@ -258,3 +258,8 @@ After running `init.sh`, it still says `📝 Plugin Template - Commit Script`
 ———
 
 When in the post-init project, running `commit.sh` does report `Error: Must be run from the repository root`   - fix that for `release.sh` as well.
+
+———
+
+On the second run with the `init.sh` I can't select the vue folder- just the none one, as the folder was renamed.
+But that means that my vue specific files get deleted.
