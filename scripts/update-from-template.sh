@@ -219,7 +219,19 @@ handle_conflicts() {
         exit 1
     fi
 
-    continue_rebase
+    # Allow retries if conflicts aren't fully resolved
+    while true; do
+        if continue_rebase; then
+            break
+        fi
+        echo ""
+        read -p "Press Enter to try again after resolving remaining conflicts, or 'a' to abort: " retry_response
+        if [ "$retry_response" = "a" ]; then
+            git rebase --abort
+            print_warning "Rebase aborted"
+            exit 1
+        fi
+    done
 }
 
 # Main script
