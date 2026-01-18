@@ -642,6 +642,9 @@ replace_in_file() {
     # Backup the file
     cp "$file" "$file.bak"
 
+    # Get current year
+    CURRENT_YEAR=$(date +%Y)
+
     # Perform replacements using sed
     # macOS sed requires '' after -i, Linux doesn't
     # IMPORTANT: Order matters! Replace more specific patterns first
@@ -669,6 +672,9 @@ replace_in_file() {
     SED_CMD+=" -e \"s/PluginTemplateCard/${PASCAL_NAME}Card/g\""
     SED_CMD+=" -e \"s/PluginTemplate/${PASCAL_NAME}/g\""
     SED_CMD+=" -e \"s/PLUGIN_TEMPLATE/$(echo $SNAKE_NAME | tr '[:lower:]' '[:upper:]')/g\""
+    # Add year replacements
+    SED_CMD+=" -e \"s/2026/$CURRENT_YEAR/g\""
+    SED_CMD+=" -e \"s/2026-2\\([0-9]\\{3\\}\\)/$CURRENT_YEAR-2\\1/g\""
 
     # Add author replacements if needed
     if [ "$REPLACE_AUTHORS" = true ]; then
