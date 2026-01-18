@@ -294,7 +294,7 @@ Write me a new script, `[update-from-template.sh](../../scripts/update-from-temp
   - else, if it is a conflict where the local version (ours) got just deleted, keep it deleted (accepting ours)
   - otherwise, stop and ask the user to resolve manually, displaying the important commands. Also hint about jetbrains IDEs having a git rebase conflict resolver.
   - Note, the script should be able to continue after manual resolution of that commit.
-    - How?
+  - Automatically edit the commit message to replace the `#` at the beginning of lines (commented out) with an escaped `\#` so that that additional rebase information is preserved.
 - at the end, display a summary of what files were changed during the rebase.
 - add it to the makefile, too, `make rebase-template` (with `template-rebase` alias)
 
