@@ -3,6 +3,9 @@
 #### General AI development guidelines:
 - Create `ai/PROGRESS.md`, and keep it updated when you complete steps.
 - You may refer to `ai/refrences` for code examples of other plugins or extra documentation provided for this task.
+- When writing code, follow these guidelines:
+  - Always prefer the early-return pattern to reduce nesting of `if`s, etc.
+  - Similarly, prefer `if …` -> `continue`/`return`/`break` in loops over large nested blocks.
 - If the plugin requires a frontend (which you can deduct from the _Plugin requirements_ section below), use Vue, TS, and SCSS for that.
   - Prefer using `<script setup lang="ts">` style single file components.
   - Use Homeassistant frontend components where possible, e.g., `<ha-icon>`, `<ha-card>`, `<ha-button>`, etc.
