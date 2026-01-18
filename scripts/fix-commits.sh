@@ -567,36 +567,21 @@ echo ""
 export BATCH_MSG_ENV="$BATCH_MESSAGE"
 
 # Create a custom git editor for handling squash commit messages
-GIT_EDITOR_SCRIPT=$(mktemp)
-trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT $REBASE_EDITOR $SQUASH_MAP $GIT_EDITOR_SCRIPT" EXIT
+GIT_EDITOR_WRAPPER="$SCRIPT_DIR/fix-commits-editor-wrapper.sh"
+GIT_EDITOR_REAL="$SCRIPT_DIR/fix-commits-editor-real.sh"
+chmod +x "$GIT_EDITOR_WRAPPER" "$GIT_EDITOR_REAL"
 
-cat > "$GIT_EDITOR_SCRIPT" << 'EOFEDITOR'
-#!/usr/bin/env bash
-# This script handles squash commit messages automatically
-# It keeps only the first non-comment line and removes the rest
-
-FILE="$1"
-
-# Get the first non-comment, non-empty line
-FIRST_MSG=$(grep -v '^#' "$FILE" | grep -v '^$' | head -1)
-
-# Remove any leading *TEMPLATE | * (with or without emoji/whitespace)
-NORMALIZED_MSG=$(echo "$FIRST_MSG" | sed -E 's/^([[:space:]]*[[:graph:]]*TEMPLATE[[:space:]]*\|[[:space:]]*)//')
-
-# Always prepend the correct prefix if set
-if [ -n "$COMMIT_PREFIX" ]; then
-    echo "$COMMIT_PREFIX$NORMALIZED_MSG" > "$FILE"
-else
-    echo "$NORMALIZED_MSG" > "$FILE"
-fi
-EOFEDITOR
-
-chmod +x "$GIT_EDITOR_SCRIPT"
+# Save the current core.editor
+ORIGINAL_CORE_EDITOR=$(git config --get core.editor || true)
+# Set core.editor to our wrapper
+GIT_EDITOR_WRAPPER_ABS=$(cd "$SCRIPT_DIR" && pwd)/fix-commits-editor-wrapper.sh
+GIT_EDITOR_REAL_ABS=$(cd "$SCRIPT_DIR" && pwd)/fix-commits-editor-real.sh
+export COMMIT_PREFIX="$COMMIT_PREFIX"
+git config core.editor "$GIT_EDITOR_WRAPPER_ABS"
 
 # Set up environment for the rebase
 export GIT_SEQUENCE_EDITOR="$REBASE_EDITOR"
-# Ensure COMMIT_PREFIX is available to the GIT_EDITOR_SCRIPT
-export GIT_EDITOR="env COMMIT_PREFIX='$COMMIT_PREFIX' $GIT_EDITOR_SCRIPT"
+# (No need to set GIT_EDITOR, core.editor is used)
 
 # Run the rebase
 if git rebase -i "$REBASE_PARENT"; then
@@ -607,6 +592,13 @@ if git rebase -i "$REBASE_PARENT"; then
     echo ""
     print_success "All done! Commits have been fixed."
     echo ""
+
+    # Restore the original core.editor
+    if [ -n "$ORIGINAL_CORE_EDITOR" ]; then
+        git config core.editor "$ORIGINAL_CORE_EDITOR"
+    else
+        git config --unset core.editor
+    fi
 
     # Clean up old recovery tags
     print_info "Checking for old recovery tags to clean up..."
@@ -679,6 +671,12 @@ if git rebase -i "$REBASE_PARENT"; then
     fi
 
 else
+    # Restore the original core.editor on failure as well
+    if [ -n "$ORIGINAL_CORE_EDITOR" ]; then
+        git config core.editor "$ORIGINAL_CORE_EDITOR"
+    else
+        git config --unset core.editor
+    fi
     print_error "Rebase failed or was aborted"
     print_info "You can continue with: git rebase --continue"
     print_info "Or abort with: git rebase --abort"
