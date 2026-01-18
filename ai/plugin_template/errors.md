@@ -462,3 +462,8 @@ Current version: vfix-commits-backup-step-047_2026-01-18_17-32-56
 Error: Cannot parse version 'fix-commits-backup-step-047_2026-01-18_17-32-56'
 ```
 It should ignore non-version tags (version tags will always start with `^v\d+`).
+
+———
+
+Missing pathes to replace with `init.sh`:
+- `release.sh` causes `sed: custom_components/template/manifest.json: No such file or directory` - template should be plugin_template, and replaced?
