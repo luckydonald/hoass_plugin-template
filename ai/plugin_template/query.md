@@ -259,3 +259,4 @@ If all those conditions are met:
 - rename `README.md` to `README_REPO_TEMPLATE.md` (overwrite if already existing)
 - rename `README_PROJECT_TEMPLATE.md` to `README.md`
 - do the replacements in `README.md`
+For readability, refactor the `Setting up README files...` in a function, and reorder the `if`s to have a early-return approch instead of nesting those `if`s.
