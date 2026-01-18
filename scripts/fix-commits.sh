@@ -633,9 +633,13 @@ if git rebase -i "$REBASE_PARENT"; then
     print_success "Rebase completed successfully!"
     echo ""
     print_info "Updated commits:"
-    for commit_hash in "${COMMIT_HASHES[@]}"; do
-        git log --oneline -1 "$commit_hash"
-    done
+    # Calculate expected number of commits after squashing
+    if [ "$DO_SQUASH" = true ]; then
+        EXPECTED_COUNT=$((COMMIT_COUNT - ${#SQUASH_COMMITS[@]}))
+    else
+        EXPECTED_COUNT=$COMMIT_COUNT
+    fi
+    git log --oneline --grep="ai: \[$PADDED_STEP\]" --reverse | head -n "$EXPECTED_COUNT"
     echo ""
     print_success "All done! Commits have been fixed."
     echo ""
