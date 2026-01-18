@@ -274,3 +274,26 @@ Have `init.sh` fix `2026` to the current year. Replace `2026-2\d{3}`, too. As al
 
 Have the `init.py` delete the `uv.lock` when it is also allowed to completely insert the backend code (but not on later runs)
 Similar, for the choosen frontend, `frontend_*/`: both yarn and npm lock files.
+
+———
+
+Write me a new script which does 
+- `git fetch ${TEMPLATE_REMOTE}`
+  - TEMPLATE_REMOTE needs to be detected:
+    - if the remote named `template`, `template-origin`, `template-local`, `template-online` or `template-github` exists, use that
+    - else, check the url, if it matches `github.com/luckydonald/hoass_{plugin-,plugin_,}template.git` (with or without .git), and if so, use that remote
+    - else, use any remote matching `\btemplate\b` in its name
+    - else, ask the user to choose from the list of remotes, 
+      - with an extra option to add new remote url, `template`, pointing to `https://github.com/luckydonald/hoass_plugin-template`.
+- tag the current HEAD with a recovery tag
+  - template variable again, use the template script.
+  - use the name `template-rebase-backup_YYYY-MM-DD-HH-MM-SS`
+- rebase current branch onto `mane`.
+- if there are conflicts
+  - but it can be auto-resolved, do so, and continue the rebase
+  - else, if it is a conflict where the local version (ours) got just deleted, keep it deleted (accepting ours)
+  - otherwise, stop and ask the user to resolve manually, displaying the important commands. Also hint about jetbrains IDEs having a git rebase conflict resolver.
+  - Note, the script should be able to continue after manual resolution of that commit.
+    - How?
+- at the end, display a summary of what files were changed during the rebase.
+- add it to the makefile, too, `make rebase-template` (with `template-rebase` alias)
