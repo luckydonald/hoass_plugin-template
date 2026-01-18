@@ -4,7 +4,7 @@
 FRONTEND ?= $(if $(wildcard frontend),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
-.PHONY: release lint format build setup help commit init fix-commits commit-fix
+.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase
 
 help:
 	@echo "Plugin Template - Development Commands"
@@ -32,6 +32,8 @@ help:
 	@echo "  fix-commits    - Fix AI commit messages (update totals and edit messages)"
 	@echo "  commit-fix     - Alias for 'fix-commits' above"
 	@echo "  release        - Bump version, lint, build, and push release"
+	@echo "  rebase-template- Update plugin from template repository"
+	@echo "  template-rebase- Alias for 'rebase-template' above"
 	@echo "  help           - Show this help message"
 
 init:
@@ -157,3 +159,8 @@ release:
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
 
+rebase-template:
+	@chmod +x scripts/update-from-template.sh
+	@./scripts/update-from-template.sh
+
+template-rebase: rebase-template
