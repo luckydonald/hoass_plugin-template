@@ -353,6 +353,14 @@ else
     KEEP_BACKEND=false
 fi
 
+# Clean up lock files for backend if this is the first run
+if [ "$KEEP_BACKEND" = true ] && [ "$ALREADY_INITIALIZED" = false ]; then
+    if [ -f "uv.lock" ]; then
+        rm -f "uv.lock"
+        print_success "Removed uv.lock (will be regenerated)"
+    fi
+fi
+
 # Step 7: Ask about frontend choice
 print_info "\nStep 7: Frontend Framework"
 echo "Choose your frontend framework:"
