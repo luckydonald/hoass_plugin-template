@@ -301,7 +301,8 @@ Write me a new script, `[update-from-template.sh](../../scripts/update-from-temp
 - When auto-accepting (and editing) rebase conflict commit messages, add a line at the with details about when the rebase happened, and from which commit to which commit.
 
 ———
-Have `init.py` write the project settings to `scripts/init.json`.
+Have `init.sh` write the project settings to `scripts/init.json`.
 Then modify `release.sh` to read that file, and use the name instead of `plugin_template`.
 Actually, write that to a separate script, `get_project_settings.py`, which can be used in any of those scripts to get the json data as variables.
 So basically, read the file, if it is missing, error out, with a hint to run `init.sh` / `make init` first.
+Additionally, `init.sh` shall read the file at the beginning, and if existing, pre-fill the prompts with the existing values, instead of the computed folder-based defaults.
