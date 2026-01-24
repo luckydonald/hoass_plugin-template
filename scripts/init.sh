@@ -280,21 +280,46 @@ fi
 
 print_info "Working directory: $REPO_ROOT"
 
+# Load existing project settings if available (pre-fill prompts)
+SETTINGS_LOADED=false
+if [ -f "scripts/get_project_settings.py" ]; then
+    if python3 scripts/get_project_settings.py >/dev/null 2>&1; then
+        print_info "Found existing project settings (scripts/init.json), pre-filling prompts"
+        # This script prints export VAR=... lines; eval them into the environment
+        eval "$(python3 scripts/get_project_settings.py)"
+        SETTINGS_LOADED=true
+    else
+        print_info "scripts/get_project_settings.py found but could not load scripts/init.json (it may be missing or invalid)"
+    fi
+fi
+
 # Step 1: Get the display name (UI name)
 print_info "Step 1: Plugin Display Name"
 echo "This is the name that will be shown in the Home Assistant UI."
 
-# Try to deduce name from folder
-FOLDER_DEFAULT=$(extract_plugin_name_from_folder)
+# Try to deduce name from folder or existing settings
+if [ -n "${DISPLAY_NAME:-}" ]; then
+    # When DISPLAY_NAME is already set from previous init.json, use it as the prompt default
+    FOLDER_DEFAULT="$DISPLAY_NAME"
+else
+    FOLDER_DEFAULT=$(extract_plugin_name_from_folder)
+fi
+
 if [ -n "$FOLDER_DEFAULT" ]; then
     echo "Example: 'My Custom Widget'"
     echo ""
-    read -p "Enter plugin display name [$FOLDER_DEFAULT]: " DISPLAY_NAME
-    DISPLAY_NAME=${DISPLAY_NAME:-$FOLDER_DEFAULT}
+    # Read into a temporary variable so we don't overwrite an already loaded DISPLAY_NAME when the user presses Enter
+    read -p "Enter plugin display name [$FOLDER_DEFAULT]: " INPUT_DISPLAY_NAME
+    if [ -n "$INPUT_DISPLAY_NAME" ]; then
+        DISPLAY_NAME="$INPUT_DISPLAY_NAME"
+    else
+        DISPLAY_NAME=${DISPLAY_NAME:-$FOLDER_DEFAULT}
+    fi
 else
     echo "Example: 'My Custom Widget'"
     echo ""
-    read -p "Enter plugin display name: " DISPLAY_NAME
+    read -p "Enter plugin display name: " INPUT_DISPLAY_NAME
+    DISPLAY_NAME=${INPUT_DISPLAY_NAME}
 fi
 
 if [ -z "$DISPLAY_NAME" ]; then
@@ -308,10 +333,15 @@ print_success "Display name: $DISPLAY_NAME"
 print_info "\nStep 2: Lowercase-Dash Name"
 echo "This is used for custom component names and filenames."
 echo "Example: 'my-custom-widget' (for <my-custom-widget-card>, my-custom-widget-card.js, etc.)"
+# Compute default from display name, but respect existing DASH_NAME loaded from settings
 DEFAULT_DASH=$(to_lowercase_dash "$DISPLAY_NAME")
-echo ""
-read -p "Enter lowercase-dash name [$DEFAULT_DASH]: " DASH_NAME
-DASH_NAME=${DASH_NAME:-$DEFAULT_DASH}
+read -p ""
+read -p "Enter lowercase-dash name [$DEFAULT_DASH]: " INPUT_DASH
+if [ -n "$INPUT_DASH" ]; then
+    DASH_NAME="$INPUT_DASH"
+else
+    DASH_NAME=${DASH_NAME:-$DEFAULT_DASH}
+fi
 
 print_success "Lowercase-dash name: $DASH_NAME"
 
@@ -319,10 +349,15 @@ print_success "Lowercase-dash name: $DASH_NAME"
 print_info "\nStep 3: Snake_Case Name"
 echo "This is used for Python module names, integration domain, sensor names, etc."
 echo "Example: 'my_custom_widget'"
+# Compute default from dash name, but respect existing SNAKE_NAME loaded from settings
 DEFAULT_SNAKE=$(to_snake_case "$DASH_NAME")
-echo ""
-read -p "Enter snake_case name [$DEFAULT_SNAKE]: " SNAKE_NAME
-SNAKE_NAME=${SNAKE_NAME:-$DEFAULT_SNAKE}
+read -p ""
+read -p "Enter snake_case name [$DEFAULT_SNAKE]: " INPUT_SNAKE
+if [ -n "$INPUT_SNAKE" ]; then
+    SNAKE_NAME="$INPUT_SNAKE"
+else
+    SNAKE_NAME=${SNAKE_NAME:-$DEFAULT_SNAKE}
+fi
 
 print_success "Snake_case name: $SNAKE_NAME"
 
@@ -330,8 +365,8 @@ print_success "Snake_case name: $SNAKE_NAME"
 print_info "\nStep 4: GitHub Username"
 echo "This is your GitHub username for the repository URL."
 echo ""
-read -p "Enter GitHub username [luckydonald]: " GITHUB_USER
-GITHUB_USER=${GITHUB_USER:-luckydonald}
+read -p "Enter GitHub username [luckydonald]: " INPUT_GITHUB
+GITHUB_USER=${INPUT_GITHUB:-${GITHUB_USER:-luckydonald}}
 
 print_success "GitHub username: $GITHUB_USER"
 
