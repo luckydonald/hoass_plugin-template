@@ -25,7 +25,8 @@ module.exports = {
 
     // Objects
     'object-curly-newline': ['error', { multiline: true, consistent: true }],
-    'object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
+    // Allow short object properties on same line to avoid noisy errors for small inline objects
+    'object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
 
     // Functions
     'function-call-argument-newline': ['error', 'consistent'],
