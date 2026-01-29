@@ -14,7 +14,8 @@ cd "${FRONTEND_DIR}"
 # Helper: check if package.json has a script
 has_script() {
   local name="$1"
-  grep -q "\"${name}\"\s*:\s*\"" package.json >/dev/null 2>&1
+  # Use POSIX whitespace class to be portable
+  grep -q "\"${name}\"[[:space:]]*:[[:space:]]*\"" package.json >/dev/null 2>&1
 }
 
 # Helper: run npm/yarn script
