@@ -11,6 +11,17 @@ fi
 
 cd "${FRONTEND_DIR}"
 
+# Run slot checker prior to formatting
+if command -v node >/dev/null 2>&1; then
+  echo "Running slot usage checker..."
+  if ! node ../scripts/check_slots.js .; then
+    echo "Slot usage check failed: please fix non-ha-* slot attributes before formatting."
+    exit 1
+  fi
+else
+  echo "Node.js not found; cannot run slot checker. Proceeding without slot checks."
+fi
+
 # Helper: check if package.json has a script
 has_script() {
   local name="$1"
