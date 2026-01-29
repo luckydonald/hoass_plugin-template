@@ -36,6 +36,8 @@ module.exports = {
 
     // Imports and commas
     'comma-dangle': ['error', 'always-multiline'],
+    // Don't enforce maximum line length in this project
+    'max-len': 'off',
 
     // Vue template rules
     'vue/max-attributes-per-line': ['error', { singleline: 1, multiline: { max: 1 } }],
