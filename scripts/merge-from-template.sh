@@ -136,13 +136,24 @@ continue_merge() {
     fi
 
     print_info "Continuing merge after manual resolution..."
+    # Prepare a non-interactive merge commit message so git won't open an editor.
+    # Create or overwrite .git/MERGE_MSG with our composed message (no commented lines).
+    local merge_msg_file=".git/MERGE_MSG"
+    local template_rev
+    template_rev=$(git rev-parse --short "$TEMPLATE_REMOTE/mane" 2>/dev/null || echo "unknown")
+    printf "Merge %s/mane into %s\n\n" "$TEMPLATE_REMOTE" "$CURRENT_BRANCH" > "$merge_msg_file"
+    printf "🔄 Template merge on %s from %s to %s/mane (%s)\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$CURRENT_BRANCH" "$TEMPLATE_REMOTE" "$template_rev" >> "$merge_msg_file"
+    # Ensure no lines start with '#' to avoid being treated as comments
+    sed -i.bak 's/^#\(.*\)$/\\#\1/' "$merge_msg_file" 2>/dev/null || true
+
     # Try git merge --continue if available, otherwise commit
-    if git merge --continue 2>/dev/null; then
+    # Use GIT_EDITOR=true to avoid opening external editors
+    if GIT_EDITOR=true git merge --continue 2>/dev/null; then
         print_success "Merge continued successfully"
         return 0
     else
-        # If merge --continue isn't available, commit merge result
-        if git commit -m "Merge $TEMPLATE_REMOTE/mane into $CURRENT_BRANCH"; then
+        # If merge --continue isn't available, commit merge result using the prepared message file
+        if git commit -F "$merge_msg_file"; then
             print_success "Merge committed successfully"
             return 0
         else
