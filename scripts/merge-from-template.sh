@@ -186,12 +186,12 @@ handle_conflicts_for_merge() {
         fi
     done
 
-    # If we can auto-stage all, try to continue
+    # If we can auto-stage all, try to continue using our non-interactive continue path
     if git diff --name-only --diff-filter=U | grep -q '.'; then
         print_warning "Some conflicts remain and require manual resolution"
     else
         print_info "Attempting to continue merge after auto-staging..."
-        if git merge --continue 2>/dev/null; then
+        if continue_merge; then
             print_success "Merge auto-resolved and continued"
             return 0
         fi
