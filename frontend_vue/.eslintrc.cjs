@@ -42,7 +42,16 @@ module.exports = {
     'vue/html-indent': ['error', 2],
 
     // Project-specific relaxations to match existing code style
+    // Allow underscores in identifiers (we use _private style in this project)
     'no-underscore-dangle': 'off',
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        'selector': 'default',
+        'format': ['camelCase', 'PascalCase', 'UPPER_CASE'],
+        'leadingUnderscore': 'allow'
+      }
+    ],
     'max-classes-per-file': ['error', 3],
     'class-methods-use-this': 'off',
     'no-console': 'warn',
