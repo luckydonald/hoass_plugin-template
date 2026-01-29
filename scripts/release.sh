@@ -156,6 +156,16 @@ fi
 
 # Frontend autofix (eslint) - only if frontend exists
 if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    # Run slot checker to ensure we don't convert slot attributes accidentally
+    if command -v node >/dev/null 2>&1; then
+        echo "  Running slot usage checker..."
+        if ! node scripts/check_slots.js "${FRONTEND_DIR}"; then
+            echo -e "${RED}  Error: slot usage check failed (non-ha-* slot attributes found). Fix them before releasing.${NC}"
+            exit 1
+        fi
+    else
+        echo "  Node.js not found; skipping slot checks."
+    fi
     echo "  Running frontend eslint autofix..."
     if grep -q '"lint:fix"' "${FRONTEND_DIR}/package.json" || grep -q '"lint"' "${FRONTEND_DIR}/package.json"; then
         if command -v npm >/dev/null 2>&1; then
