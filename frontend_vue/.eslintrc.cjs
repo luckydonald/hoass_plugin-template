@@ -45,9 +45,8 @@ module.exports = {
     'vue/html-indent': ['error', 2],
 
     // Project-specific relaxations to match existing code style
-    // Keep the underscore-dangle rule enabled but allow member access (this._private)
-    // 'no-underscore-dangle': 'off',
-    'no-underscore-dangle': ['error', { 'allowAfterThis': true, 'allowAfterSuper': true, 'allow': [] }],
+    // Allow underscore usage in properties and members (Home Assistant style)
+    'no-underscore-dangle': 'off',
     '@typescript-eslint/naming-convention': [
       'error',
       {
@@ -64,6 +63,17 @@ module.exports = {
       {
         selector: 'typeProperty',
         format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'],
+        leadingUnderscore: 'allow'
+      },
+      // Allow leading underscore for class methods and functions (common internal helpers)
+      {
+        selector: 'method',
+        format: ['camelCase', 'PascalCase'],
+        leadingUnderscore: 'allow'
+      },
+      {
+        selector: 'function',
+        format: ['camelCase', 'PascalCase'],
         leadingUnderscore: 'allow'
       }
     ],
