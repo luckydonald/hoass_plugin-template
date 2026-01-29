@@ -718,3 +718,7 @@ However, that TSConfig does not include this file. Either:
 See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
 
 ✖ 79 problems (78 errors, 1 warning)
+
+———
+
+[vite:css] Preprocessor dependency "sass-embedded" not found. Did you install it? Try `yarn add -D sass-embedded`.                                                                                                
