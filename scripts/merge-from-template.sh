@@ -146,20 +146,14 @@ continue_merge() {
     # Ensure no lines start with '#' to avoid being treated as comments
     sed -i.bak 's/^#\(.*\)$/\\#\1/' "$merge_msg_file" 2>/dev/null || true
 
-    # Try git merge --continue if available, otherwise commit
-    # Use GIT_EDITOR=true to avoid opening external editors
-    if GIT_EDITOR=true git merge --continue 2>/dev/null; then
-        print_success "Merge continued successfully"
+    # Finalize the merge non-interactively by committing using the prepared message
+    # This avoids opening an editor (some git versions may still prompt on merge --continue).
+    if git commit -F "$merge_msg_file"; then
+        print_success "Merge committed successfully"
         return 0
     else
-        # If merge --continue isn't available, commit merge result using the prepared message file
-        if git commit -F "$merge_msg_file"; then
-            print_success "Merge committed successfully"
-            return 0
-        else
-            print_error "Merge continue/commit failed"
-            return 1
-        fi
+        print_error "Merge commit failed"
+        return 1
     fi
 }
 
