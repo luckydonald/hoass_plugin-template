@@ -363,3 +363,4 @@ Okay, we need to work on the `eslint --fix` rules:
   - `@typescript-eslint/naming-convention`
   - This is for CSS variable names, so we need to allow `kebab-case` with that `--` prefix
 7. Do not enforce a max line length (`max-len`).
+- For running those tests you must navigate to `../hoass_calendar-alarm-clock` first, that's the actual templated plugin where I am facing the issues in.
