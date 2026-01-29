@@ -364,3 +364,5 @@ Okay, we need to work on the `eslint --fix` rules:
   - This is for CSS variable names, so we need to allow `kebab-case` with that `--` prefix
 7. Do not enforce a max line length (`max-len`).
 - For running those tests you must navigate to `../hoass_calendar-alarm-clock` first, that's the actual templated plugin where I am facing the issues in.
+  - I merged the newest version of this template into that directory- So you can test now. I only meant you to run the tests there, then edit here, and then let me merge it, I will talk to you again afterwards.
+  - In most regards that dir should be our templated result, so `frontend_vue` became `frontend`, otherwise it's pretty much having our tooling.
