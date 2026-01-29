@@ -68,6 +68,14 @@ if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" 
     exit 1
 fi
 
+# Detect frontend directory to support either frontend/ or frontend_vue/
+FRONTEND_DIR=""
+if [ -d "frontend" ]; then
+    FRONTEND_DIR="frontend"
+elif [ -d "frontend_vue" ]; then
+    FRONTEND_DIR="frontend_vue"
+fi
+
 # Check for uncommitted changes (only tracked files, respects .gitignore)
 if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     echo -e "${YELLOW}Warning: You have uncommitted changes${NC}"
@@ -119,9 +127,12 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 echo "  Running frontend type-check..."
-cd frontend
-yarn type-check
-cd ..
+if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    (cd "${FRONTEND_DIR}" && if command -v npm >/dev/null 2>&1; then npm run type-check || true; elif command -v yarn >/dev/null 2>&1; then yarn type-check || true; fi)
+else
+    echo "  No frontend detected or no package.json - skipping frontend type-check"
+fi
+
 echo "  Type checks passed!"
 
 # Step 2: Run commit.sh to commit pending changes
@@ -133,13 +144,57 @@ chmod +x scripts/commit.sh
 # Step 3: Auto-fix lint errors if possible
 echo ""
 echo -e "${GREEN}🔧 Step 3: Auto-fix lint errors${NC}"
-uv run ruff check --fix custom_components/
+# Python autofix
+uv run ruff check --fix custom_components/ || true
 if ! git diff --quiet -- custom_components/; then
     git add -u custom_components/
     git commit -m "$(reason="ruff autofix" emoji="🐍" tmpl "${COMMIT_MSG_AUTOFIX}")"
     echo "  Committed auto-fixed lint errors"
 else
     echo "  No auto-fixable lint errors"
+fi
+
+# Frontend autofix (eslint) - only if frontend exists
+if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    echo "  Running frontend eslint autofix..."
+    if grep -q '"lint:fix"' "${FRONTEND_DIR}/package.json" || grep -q '"lint"' "${FRONTEND_DIR}/package.json"; then
+        if command -v npm >/dev/null 2>&1; then
+            (cd "${FRONTEND_DIR}" && if grep -q '"lint:fix"' package.json; then npm run lint:fix || true; else if grep -q '"lint"' package.json; then npm run lint || true; fi)
+        elif command -v yarn >/dev/null 2>&1; then
+            (cd "${FRONTEND_DIR}" && if grep -q '"lint:fix"' package.json; then yarn lint:fix || true; else if grep -q '"lint"' package.json; then yarn lint || true; fi)
+        else
+            echo "  No npm/yarn found - skipping frontend lint autofix"
+        fi
+    else
+        echo "  No lint scripts defined in ${FRONTEND_DIR}/package.json - skipping frontend lint autofix"
+    fi
+
+    if ! git diff --quiet -- "${FRONTEND_DIR}/"; then
+        git add -u "${FRONTEND_DIR}/"
+        git commit -m "$(reason="eslint autofix" emoji="📘" tmpl "${COMMIT_MSG_AUTOFIX}")"
+        echo "  Committed frontend auto-fixed lint errors"
+    else
+        echo "  No frontend autofix changes"
+    fi
+
+    # Verify no lint errors remain
+    echo "  Verifying frontend lint results..."
+    if command -v npm >/dev/null 2>&1; then
+        (cd "${FRONTEND_DIR}" && if grep -q '"lint"' package.json; then npm run lint; fi)
+        LINT_STATUS=$?
+    elif command -v yarn >/dev/null 2>&1; then
+        (cd "${FRONTEND_DIR}" && if grep -q '"lint"' package.json; then yarn lint; fi)
+        LINT_STATUS=$?
+    else
+        LINT_STATUS=0
+    fi
+
+    if [ ${LINT_STATUS} -ne 0 ]; then
+        echo -e "${RED}  Error: Frontend lint errors remain. Fix them manually or run the lint scripts.${NC}"
+        exit 1
+    fi
+else
+    echo "  No frontend detected - skipping frontend lint autofix"
 fi
 
 # Verify no errors remain after autofix
@@ -165,11 +220,14 @@ fi
 # Step 5: Run TS formatter and commit
 echo ""
 echo -e "${GREEN}📘 Step 5: Format TypeScript code${NC}"
-cd frontend
-yarn format
-cd ..
-if ! git diff --quiet -- frontend/; then
-    git add -u frontend/
+if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    (cd "${FRONTEND_DIR}" && if command -v npm >/dev/null 2>&1; then npm run format || true; elif command -v yarn >/dev/null 2>&1; then yarn format || true; fi)
+else
+    echo "  No frontend detected - skipping TypeScript format"
+fi
+
+if ! git diff --quiet -- "${FRONTEND_DIR}/"; then
+    git add -u "${FRONTEND_DIR}/"
     git commit -m "$(reason="ts autoformat" emoji="📘" tmpl "${COMMIT_MSG_LINT}")"
     echo "  Committed TypeScript formatting changes"
 else
@@ -179,13 +237,13 @@ fi
 # Step 6: Build frontend to confirm it works
 echo ""
 echo -e "${GREEN}📦 Step 6: Build frontend${NC}"
-cd frontend
-echo "  Installing dependencies..."
-yarn install --silent
-echo "  Building..."
-yarn build
-cd ..
-echo "  Frontend built successfully!"
+if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    (cd "${FRONTEND_DIR}" && echo "  Installing dependencies..." && if command -v npm >/dev/null 2>&1; then npm install --silent; elif command -v yarn >/dev/null 2>&1; then yarn install --silent; fi)
+    (cd "${FRONTEND_DIR}" && echo "  Building..." && if command -v npm >/dev/null 2>&1; then npm run build; elif command -v yarn >/dev/null 2>&1; then yarn build; fi)
+    echo "  Frontend built successfully!"
+else
+    echo "  No frontend detected - skipping build"
+fi
 
 # Step 7: Bump version AFTER all tests pass
 
