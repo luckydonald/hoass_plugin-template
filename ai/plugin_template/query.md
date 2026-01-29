@@ -329,3 +329,7 @@ Edit my linting/formatting of TS/Vue to be:
   6. amend the last commit with the result (hence the tag earlier, as now we branched that off)
 
 This should for now (to test) be an extra script, accessible with `make commit-format`
+
+———
+
+Duplicate and adapt the `make template-rebase` to a `make template-merge` command, which instead of rebasing merges the template's mane branch into the current branch. It should have the same conflict resolution strategies and automatics as the rebase one.
