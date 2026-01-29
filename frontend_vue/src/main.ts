@@ -450,6 +450,7 @@ window.customCards.push({
   preview: true,
 });
 
+// eslint-disable-next-line no-console
 console.info(
   '%c PLUGIN-TEMPLATE-CARD %c dev',
   'color: white; background: #3498db; font-weight: bold;',
