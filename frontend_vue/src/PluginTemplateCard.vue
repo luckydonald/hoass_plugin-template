@@ -49,12 +49,7 @@ async function _callService(domain: string, service: string, data: any = {}) {
 }
 
 // Format time for display
-const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+const formatTime = (date: Date): string => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 </script>
 
 <template>
