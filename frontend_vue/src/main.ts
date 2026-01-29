@@ -4,6 +4,17 @@ import type { CardConfig, HomeAssistant } from './types';
 
 interface PluginTemplateCardConfig extends CardConfig {
   type?: string;
+  // UI/editor related optional properties
+  title?: string;
+  entity?: string;
+  clock_display?: string;
+  alarm_list_mode?: 'days' | 'count' | string;
+  alarm_list_count?: number;
+  alarm_list_days?: number;
+  show_clock?: boolean;
+  show_quick_alarm?: boolean;
+  show_alarm_list?: boolean;
+  show_add_section?: string;
 }
 
 interface AppData {
@@ -429,19 +440,18 @@ class PluginTemplateCardEditor extends HTMLElement {
 // Register custom elements
 customElements.define('plugin-template-card', PluginTemplateCardElement);
 customElements.define('plugin-template-card-editor', PluginTemplateCardEditor);
-customElements.define('calender-alarm-clock-card-editor', AlarmClockCardEditor);
 
 // Register with Home Assistant's custom card registry
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'calender-alarm-clock-card',
-  name: 'Calendar Alarm Clock Card',
-  description: 'A card for managing calendar-based alarms with clock display, quick alarms, snooze and dismiss',
+  type: 'custom:plugin-template-card',
+  name: 'Plugin Template Card',
+  description: 'A plugin template card for Home Assistant',
   preview: true,
 });
 
 console.info(
-  '%c CALENDAR-ALARM-CLOCK-CARD %c 1.0.2 ',
+  '%c PLUGIN-TEMPLATE-CARD %c dev',
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );
