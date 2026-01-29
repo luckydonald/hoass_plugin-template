@@ -79,7 +79,20 @@ module.exports = {
       {
         selector: 'typeProperty',
         format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'],
-        leadingUnderscore: 'allow'
+        leadingUnderscore: 'allow',
+        filter: {
+          regex: '^--[a-z0-9-]+$',
+          match: true
+        }
+      },
+      {
+        // Allow object literal properties that are CSS custom properties (e.g. "--hour-background")
+        selector: 'objectLiteralProperty',
+        format: null,
+        filter: {
+          regex: '^--[a-z0-9-]+$',
+          match: true
+        }
       },
       // Allow leading underscore for class methods and functions (common internal helpers)
       {
