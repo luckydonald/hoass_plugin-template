@@ -4,7 +4,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    project: './tsconfig.json',
+    // Use an eslint-specific tsconfig that includes tests and config files
+    project: './tsconfig.eslint.json',
   },
   env: {
     browser: true,
@@ -38,7 +39,16 @@ module.exports = {
     'vue/html-closing-bracket-newline': ['error', { singleline: 'never', multiline: 'always' }],
     'vue/multiline-html-element-content-newline': ['error', { ignoreWhenEmpty: true, allowEmptyLines: false }],
     'vue/singleline-html-element-content-newline': 'off',
-    'vue/html-indent': ['error', 2]
+    'vue/html-indent': ['error', 2],
+
+    // Project-specific relaxations to match existing code style
+    'no-underscore-dangle': 'off',
+    'max-classes-per-file': ['error', 3],
+    'class-methods-use-this': 'off',
+    'no-console': 'warn',
+
+    // Allow unused vars that start with an underscore (common pattern)
+    '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }]
   },
   overrides: [
     {
