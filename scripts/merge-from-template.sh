@@ -63,7 +63,8 @@ detect_template_remote() {
 
     if [ -z "$template_remote" ]; then
         while IFS= read -r remote; do
-            local url=$(git remote get-url "$remote" 2>/dev/null || echo "")
+            local url
+            url=$(git remote get-url "$remote" 2>/dev/null || echo "")
             if [[ "$url" =~ github\.com/luckydonald/hoass_(plugin[-_])?template(\.git)?$ ]]; then
                 template_remote="$remote"
                 break
@@ -118,7 +119,8 @@ continue_merge() {
     fi
 
     # Auto-stage resolved files if conflict markers gone
-    local unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+    local unmerged_files
+    unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
     if [ -n "$unmerged_files" ]; then
         for file in $unmerged_files; do
             if [ -f "$file" ]; then
@@ -151,7 +153,8 @@ continue_merge() {
 }
 
 handle_conflicts_for_merge() {
-    local conflict_files=$(git diff --name-only --diff-filter=U)
+    local conflict_files
+    conflict_files=$(git diff --name-only --diff-filter=U)
     print_warning "Conflicts detected in:"
     echo "$conflict_files"
     echo ""
