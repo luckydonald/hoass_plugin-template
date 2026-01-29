@@ -111,6 +111,17 @@ module.exports = {
     'max-classes-per-file': ['error', 3],
     'class-methods-use-this': 'off',
     'no-console': 'warn',
+    // Relax template-specific rules that cause noise in copied projects
+    'guard-for-in': 'off',
+    'no-restricted-syntax': [
+      'error',
+      // keep other restricted syntaxes if needed, but allow for-in
+    ],
+    '@typescript-eslint/no-use-before-define': ['error', { 'functions': false, 'classes': true, 'variables': true }],
+    'no-restricted-globals': ['error', { 'name': 'event', 'message': 'Do not use global event' }],
+    'no-spaced-func': 'off',
+    'prefer-destructuring': 'off',
+    'default-case': 'off',
 
     // Allow unused vars that start with an underscore (common pattern in function args)
     '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }]
