@@ -722,3 +722,6 @@ See the typescript-eslint docs for more info: https://typescript-eslint.io/linti
 ———
 
 [vite:css] Preprocessor dependency "sass-embedded" not found. Did you install it? Try `yarn add -D sass-embedded`.                                                                                                
+———
+
+The merge variant has the same problem with opening a EDITOR instead of automatically providing the commit message, with everything un-commented.
