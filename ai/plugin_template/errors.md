@@ -583,3 +583,138 @@ sh: dprint: command not found
 make: *** [format-ts] Error 127
 
 --> SOLUTION: `make setup-frontend` 
+
+———
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/src/PluginTemplateCard.vue
+  46:16  error  'callService' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/src/main.ts
+    1:1   error    File has too many classes (2). Maximum allowed is 1       max-classes-per-file
+   24:5   error    Unexpected dangling '_' in '_hass'                        no-underscore-dangle
+   25:9   error    Unexpected dangling '_' in '_instance'                    no-underscore-dangle
+   25:9   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   26:21  error    Unexpected dangling '_' in '_instance'                    no-underscore-dangle
+   26:21  error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   32:5   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+   33:9   error    Unexpected dangling '_' in '_instance'                    no-underscore-dangle
+   33:9   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   34:21  error    Unexpected dangling '_' in '_instance'                    no-underscore-dangle
+   34:21  error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   40:10  error    Unexpected dangling '_' in '_root'                        no-underscore-dangle
+   41:7   error    Unexpected dangling '_' in '_root'                        no-underscore-dangle
+   42:24  error    Unexpected dangling '_' in '_root'                        no-underscore-dangle
+   45:25  error    Unexpected dangling '_' in '_hass'                        no-underscore-dangle
+   46:27  error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+   48:5   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   64:5   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   64:21  error    Unexpected dangling '_' in '_root'                        no-underscore-dangle
+   68:9   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   69:7   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   70:7   error    Unexpected dangling '_' in '_app'                         no-underscore-dangle
+   74:3   error    Expected 'this' to be used by class method 'getCardSize'  class-methods-use-this
+   96:5   error    Unexpected dangling '_' in '_hass'                        no-underscore-dangle
+   97:5   error    Unexpected dangling '_' in '_render'                      no-underscore-dangle
+  101:5   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  102:5   error    Unexpected dangling '_' in '_render'                      no-underscore-dangle
+  105:3   error    Unexpected dangling '_' in '_render'                      no-underscore-dangle
+  106:10  error    Unexpected dangling '_' in '_hass'                        no-underscore-dangle
+  107:5   error    Unexpected dangling '_' in '_renderManual'                no-underscore-dangle
+  110:3   error    Unexpected dangling '_' in '_renderManual'                no-underscore-dangle
+  120:25  error    Unexpected dangling '_' in '_createTextInput'             no-underscore-dangle
+  123:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  127:25  error    Unexpected dangling '_' in '_createEntityPicker'          no-underscore-dangle
+  130:25  error    Unexpected dangling '_' in '_createSelect'                no-underscore-dangle
+  133:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  155:25  error    Unexpected dangling '_' in '_createSelect'                no-underscore-dangle
+  158:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  172:9   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  173:27  error    Unexpected dangling '_' in '_createNumberInput'           no-underscore-dangle
+  176:9   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  181:27  error    Unexpected dangling '_' in '_createNumberInput'           no-underscore-dangle
+  184:9   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  197:25  error    Unexpected dangling '_' in '_createToggle'                no-underscore-dangle
+  200:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  203:25  error    Unexpected dangling '_' in '_createToggle'                no-underscore-dangle
+  206:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  209:25  error    Unexpected dangling '_' in '_createToggle'                no-underscore-dangle
+  212:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  216:25  error    Unexpected dangling '_' in '_createSelect'                no-underscore-dangle
+  219:7   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  250:3   error    Unexpected dangling '_' in '_createTextInput'             no-underscore-dangle
+  270:7   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  278:3   error    Unexpected dangling '_' in '_createNumberInput'           no-underscore-dangle
+  303:7   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  311:3   error    Unexpected dangling '_' in '_createSelect'                no-underscore-dangle
+  344:7   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  352:3   error    Unexpected dangling '_' in '_createToggle'                no-underscore-dangle
+  372:7   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  380:3   error    Unexpected dangling '_' in '_createEntityPicker'          no-underscore-dangle
+  393:9   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  394:42  error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  396:34  error    Unexpected dangling '_' in '_hass'                        no-underscore-dangle
+  403:7   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  411:3   error    Unexpected dangling '_' in '_updateConfig'                no-underscore-dangle
+  412:5   error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  413:10  error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  416:5   error    Unexpected dangling '_' in '_fireConfigChanged'           no-underscore-dangle
+  419:3   error    Unexpected dangling '_' in '_fireConfigChanged'           no-underscore-dangle
+  421:25  error    Unexpected dangling '_' in '_config'                      no-underscore-dangle
+  443:1   warning  Unexpected console statement                              no-console
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/tests/PluginTemplateCard.test.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/tests/PluginTemplateCard.test.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/tests/main.test.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/tests/main.test.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/tests/setup.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/tests/setup.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/tests/types.test.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/tests/types.test.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/tests/utils.test.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/tests/utils.test.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/vite.config.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/vite.config.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+/Users/user/Documents/programming/Python/HomeAssistant/hoass_template/frontend_vue/vitest.config.ts
+  0:0  error  Parsing error: ESLint was configured to run on `<tsconfigRootDir>/vitest.config.ts` using `parserOptions.project`: /users/user/documents/programming/python/homeassistant/hoass_template/frontend_vue/tsconfig.json
+However, that TSConfig does not include this file. Either:
+- Change ESLint's list of included files to not include this file
+- Change that TSConfig to include this file
+- Create a new TSConfig that includes this file and include it in your parserOptions.project
+See the typescript-eslint docs for more info: https://typescript-eslint.io/linting/troubleshooting#i-get-errors-telling-me-eslint-was-configured-to-run--however-that-tsconfig-does-not--none-of-those-tsconfigs-include-this-file
+
+✖ 79 problems (78 errors, 1 warning)
