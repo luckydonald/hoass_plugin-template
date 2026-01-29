@@ -78,7 +78,6 @@ if [ -d "frontend_vue" ] || [ -d "frontend" ]; then
   git checkout "$TMP_BRANCH"
   set +e
   ./scripts/frontend_format.sh "$FRONTEND_DIR"
-  TS_STATUS=$?
   set -e
   # Check if there are unstaged changes (format touched files)
   if ! git diff --quiet; then
