@@ -6,6 +6,8 @@ module.exports = {
     sourceType: 'module',
     // Use an eslint-specific tsconfig that includes tests and config files
     project: './tsconfig.eslint.json',
+    // Quiet the unsupported TypeScript version warning for now
+    warnOnUnsupportedTypeScriptVersion: false,
   },
   env: {
     browser: true,
