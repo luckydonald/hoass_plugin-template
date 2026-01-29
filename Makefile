@@ -14,7 +14,7 @@ endif
 FRONTEND ?= $(if $(FRONTEND_DIR),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
-.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase
+.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge
 
 help:
 	@echo "Plugin Template - Development Commands"
@@ -192,6 +192,12 @@ rebase-template:
 	@./scripts/update-from-template.sh
 
 template-rebase: rebase-template
+
+merge-template:
+	@chmod +x scripts/merge-from-template.sh
+	@./scripts/merge-from-template.sh
+
+template-merge: merge-template
 
 %:
 	@echo "Unknown target '$@'. Showing help:"
