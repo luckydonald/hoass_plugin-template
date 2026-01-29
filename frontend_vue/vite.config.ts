@@ -29,7 +29,9 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'PluginTemplateCard',
       fileName: () => 'plugin-template-card.js',
-      formats: ['iife'],
+      formats: [
+        'iife',
+      ],
     },
     outDir: '../custom_components/plugin_template/www',
     emptyOutDir: false,
@@ -41,4 +43,3 @@ export default defineConfig({
     },
   },
 });
-

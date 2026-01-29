@@ -131,4 +131,3 @@ describe('PluginTemplateCard', () => {
     expect(wrapper.exists()).toBe(true);
   });
 });
-

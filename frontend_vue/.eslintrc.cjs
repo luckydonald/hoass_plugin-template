@@ -58,6 +58,19 @@ module.exports = {
         parser: '@typescript-eslint/parser',
         extraFileExtensions: ['.vue']
       }
+    },
+    // Relax rules for test and config files
+    {
+      files: ['tests/**/*.ts', 'vite.config.ts', 'vitest.config.ts'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'import/extensions': 'off',
+        'import/no-extraneous-dependencies': 'off',
+        'array-bracket-newline': 'off',
+        'array-element-newline': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+        'no-multiple-empty-lines': 'off'
+      }
     }
   ]
 };

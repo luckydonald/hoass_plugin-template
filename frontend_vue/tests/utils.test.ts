@@ -16,4 +16,3 @@ describe('Example utility tests', () => {
     expect(formatted).toContain('2024-01-01');
   });
 });
-

@@ -23,4 +23,3 @@ global.customElements = {
 (global as any).window = {
   customCards: [],
 };
-

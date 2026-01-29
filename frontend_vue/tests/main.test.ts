@@ -41,4 +41,3 @@ describe('main.ts registration', () => {
     expect(Array.isArray(windowObj.customCards)).toBe(true);
   });
 });
-
