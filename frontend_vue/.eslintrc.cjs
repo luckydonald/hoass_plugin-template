@@ -48,9 +48,20 @@ module.exports = {
     '@typescript-eslint/naming-convention': [
       'error',
       {
-        'selector': 'default',
-        'format': ['camelCase', 'PascalCase', 'UPPER_CASE'],
-        'leadingUnderscore': 'allow'
+        selector: 'default',
+        format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+        leadingUnderscore: 'allow'
+      },
+      {
+        // Allow object properties (including interface/type properties) to use snake_case
+        selector: 'property',
+        format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'],
+        leadingUnderscore: 'allow'
+      },
+      {
+        selector: 'typeProperty',
+        format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'],
+        leadingUnderscore: 'allow'
       }
     ],
     'max-classes-per-file': ['error', 3],
