@@ -725,3 +725,7 @@ See the typescript-eslint docs for more info: https://typescript-eslint.io/linti
 ———
 
 The merge variant has the same problem with opening a EDITOR instead of automatically providing the commit message, with everything un-commented.
+
+———
+The merge script seems to be missing the `# Re-check after auto-staging` part?
+Also, it should edit the existing message the editor would display, not create (overwrite) the existing / a new one - uncommenting there would pretty useless, no?.
