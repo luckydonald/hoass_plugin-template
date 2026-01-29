@@ -47,7 +47,8 @@ module.exports = {
     'vue/html-self-closing': ['error', {
       'html': {
         'void': 'always',
-        'normal': 'never',
+        // Allow normal HTML elements to be self-closing (preserve `<div class="line" />`)
+        'normal': 'always',
         'component': 'always'
       },
       'svg': 'always',
