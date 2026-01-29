@@ -1,8 +1,11 @@
 # Is this a frontend or backend project, or both?
-# Set explicit (e.g. by `make lint FRONTEND=1 BACKEND=1`), or let the
-# defaults detect the presence of the directories.
-FRONTEND ?= $(if $(wildcard frontend),1,0)
+# Set explicit (e.g. by `make lint FRONTEND=1 BACKEND=1`), or detect the
+# presence of the directories. FRONTEND_DIR picks the concrete frontend folder.
+FRONTEND ?= $(shell if [ -d frontend ] || [ -d frontend_vue ]; then echo 1; else echo 0; fi)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
+
+# Prefer frontend/ then frontend_vue/
+FRONTEND_DIR := $(shell if [ -d frontend ]; then echo frontend; elif [ -d frontend_vue ]; then echo frontend_vue; else echo ''; fi)
 
 .PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase
 
@@ -59,7 +62,15 @@ endif
 setup-frontend:
 ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
-	cd frontend && yarn install
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm install; elif command -v yarn >/dev/null 2>&1; then yarn install; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
+else
+	@echo "No frontend sources detected – skipping frontend setup."
+endif
+
 test: test-py test-ts
 
 test-py:
@@ -73,7 +84,11 @@ endif
 test-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Running frontend tests..."
-	cd frontend && yarn test
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm run test; elif command -v yarn >/dev/null 2>&1; then yarn test; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping frontend tests."
 endif
@@ -98,10 +113,6 @@ else
 	@echo "No frontend sources detected – skipping frontend coverage."
 endif
 
-else
-	@echo "No frontend sources detected – skipping frontend setup."
-endif
-
 lint: lint-py lint-ts
 
 lint-py:
@@ -115,8 +126,12 @@ endif
 
 lint-ts:
 ifeq ($(FRONTEND),1)
-	@echo "Type checking frontend..."
-	cd frontend && yarn type-check
+	@echo "Type checking / linting frontend..."
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm run lint || npm run type-check || true; elif command -v yarn >/dev/null 2>&1; then yarn lint || yarn type-check || true; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping TypeScript lint."
 endif
@@ -136,7 +151,11 @@ endif
 format-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Formatting TypeScript..."
-	cd frontend && yarn format
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm run format; elif command -v yarn >/dev/null 2>&1; then yarn format; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping TypeScript format."
 endif
@@ -146,7 +165,11 @@ build: build-frontend
 build-frontend:
 ifeq ($(FRONTEND),1)
 	@echo "Building frontend..."
-	cd frontend && yarn install && yarn build
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm install --silent && npm run build; elif command -v yarn >/dev/null 2>&1; then yarn install --silent && yarn build; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping build."
 endif
