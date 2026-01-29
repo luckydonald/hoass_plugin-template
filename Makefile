@@ -44,6 +44,8 @@ help:
 	@echo "  release        - Bump version, lint, build, and push release"
 	@echo "  rebase-template- Update plugin from template repository"
 	@echo "  template-rebase- Alias for 'rebase-template' above"
+	@echo "  merge-template    - Merge template's mane branch into current branch"
+	@echo "  template-merge-   Alias for 'merge-template' above"
 	@echo "  help           - Show this help message"
 
 init:
