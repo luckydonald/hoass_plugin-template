@@ -316,3 +316,16 @@ The idea is to have as minimal diffs as possible when changing stuff. It may exp
 Please configure `eslint` with the required plugins and settings. Check on NPM for the latest version of each. I do not desire to use prettier.
 Please do integrate it into `Makefile` and the [`release.sh`](../../scripts/release.sh)` deploy script.
 Running `make format-ts` should contain the `--fix` one as well, just like `format-py` also builds upon `lint-py` with `--fix`.
+
+Edit my linting/formatting of TS/Vue to be:
+- Pragmatic (my recommended default): keep Airbnb as the baseline and keep the targeted, minimal exceptions you already have (no-underscore-dangle allowAfterThis/allowAfterSuper, property/typeProperty snake_case).
+- Simply ignore the TS version conflict for now.
+- I want husky commit, but it should keep the previous commit too. 
+  1. So do normal commit,
+  2. see if we would need to reformat,
+  3. if yes continue like this
+  4. tag that `format-backup_YYYY-DD-MM_NNN` (NNN = padded counter)
+  5. auto-format
+  6. amend the last commit with the result (hence the tag earlier, as now we branched that off)
+
+This should for now (to test) be an extra script, accessible with `make commit-format`
