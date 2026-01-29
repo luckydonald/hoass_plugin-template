@@ -312,5 +312,3 @@ Also HTML attributes should be on separate lines, in witch case also and tag sta
 
 Make sure that the formatter DOES NOT colapse multiline stuff back into a single line once it's deemed short enough, both for ts arrays, imports, argument lists, ... and vue html stuff.
 The idea is to have as minimal diffs as possible when changing stuff. It may expand stuff to multiple lines, but never collapse it back.
-
-Please explain me the options I have, first.
