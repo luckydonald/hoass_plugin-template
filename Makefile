@@ -202,7 +202,11 @@ merge-template:
 template-merge: merge-template
 
 check-slots:
-	@node scripts/check_slots.js frontend_vue || true
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		node scripts/check_slots.js "$(FRONTEND_DIR)"; \
+	else \
+		echo "No frontend directory detected; skipping slot checks."; \
+	fi
 
 %:
 	@echo "Unknown target '$@'. Showing help:"
