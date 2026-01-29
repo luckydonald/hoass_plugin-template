@@ -42,18 +42,19 @@ const getEntityState = (entityId: string) => {
   return props.hass.states[entityId];
 };
 
-// Helper to call service
-async function callService(domain: string, service: string, data: any = {}) {
+// Helper to call service (prefixed with underscore so unused is ignored by eslint)
+async function _callService(domain: string, service: string, data: any = {}) {
   if (!props.hass) return;
   await props.hass.callService(domain, service, data);
 }
 
 // Format time for display
-const formatTime = (date: Date): string =>
-  date.toLocaleTimeString([], {
+const formatTime = (date: Date): string => {
+  return date.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
 </script>
 
 <template>
