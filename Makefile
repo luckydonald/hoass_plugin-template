@@ -179,6 +179,10 @@ commit:
 	@chmod +x scripts/commit.sh
 	@./scripts/commit.sh
 
+commit-format:
+	@chmod +x scripts/commit-format.sh
+	@./scripts/commit-format.sh
+
 release:
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
