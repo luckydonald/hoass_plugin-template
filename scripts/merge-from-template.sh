@@ -148,26 +148,28 @@ continue_merge() {
     fi
 
     print_info "Continuing merge after manual resolution..."
-    # Prepare a non-interactive merge commit message so git won't open an editor.
-    # Create or overwrite .git/MERGE_MSG with our composed message (no commented lines).
-    # Uncomment merge details in the commit message
-    local message_file=".git/MERGE_MSG"
+    # Prepare a non-interactive merge commit message by editing the existing
+    # .git/MERGE_MSG if present (so we edit rather than overwrite the editor's
+    # template). Prepend our details so they're used as the commit message.
+    local merge_msg_file=".git/MERGE_MSG"
     local template_rev
     template_rev=$(git rev-parse --short "$TEMPLATE_REMOTE/mane" 2>/dev/null || echo "unknown")
-
-    if [ -n "$message_file" ] && [ -f "$message_file" ]; then
-        printf "Merge %s/mane into %s\n\n" "$TEMPLATE_REMOTE" "$CURRENT_BRANCH" > "$message_file"
-        # Escape # at start of lines to prevent them from being treated as comments
-        sed -i 's/^#/\\#/' "$message_file" 2>/dev/null || true
-
-        # Add rebase details at the end
-        echo "" >> "$message_file"
-        printf "⛙ Template merge on %s from %s to %s/mane (%s)\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$CURRENT_BRANCH" "$TEMPLATE_REMOTE" "$template_rev" >> "$message_file"
+    local header
+    header=$(printf "Merge %s/mane into %s\n\n" "$TEMPLATE_REMOTE" "$CURRENT_BRANCH")
+    header+=$(printf "🔄 Template merge on %s from %s to %s/mane (%s)\n\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$CURRENT_BRANCH" "$TEMPLATE_REMOTE" "$template_rev")
+    if [ -f "$merge_msg_file" ]; then
+        # Prepend header to existing MERGE_MSG preserving any existing template
+        tmpfile=$(mktemp)
+        printf "%s" "$header" > "$tmpfile"
+        cat "$merge_msg_file" >> "$tmpfile"
+        mv "$tmpfile" "$merge_msg_file"
+    else
+        printf "%s" "$header" > "$merge_msg_file"
     fi
 
     # Finalize the merge non-interactively by committing using the prepared message
     # This avoids opening an editor (some git versions may still prompt on merge --continue).
-    if git commit -F "$message_file"; then
+    if git commit -F "$merge_msg_file"; then
         print_success "Merge committed successfully"
         return 0
     else
@@ -208,11 +210,13 @@ handle_conflicts_for_merge() {
         fi
     done
 
-    # If we can auto-stage all, try to continue using our non-interactive continue path
-    if git diff --name-only --diff-filter=U | grep -q '.'; then
+    # Re-check after auto-staging: see if any unmerged files remain. If none,
+    # then continue the merge non-interactively.
+    conflict_files=$(git diff --name-only --diff-filter=U)
+    if [ -n "$conflict_files" ]; then
         print_warning "Some conflicts remain and require manual resolution"
     else
-        print_info "Attempting to continue merge after auto-staging..."
+        print_info "No conflicts remain after auto-staging; continuing merge..."
         if continue_merge; then
             print_success "Merge auto-resolved and continued"
             return 0
