@@ -95,7 +95,7 @@ const formatTime = (date: Date): string => date.toLocaleTimeString([], { hour: '
   </ha-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 ha-card {
   padding: 16px;
 }
