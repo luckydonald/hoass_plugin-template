@@ -344,6 +344,7 @@ Okay, we need to work on the `eslint --fix` rules:
    - would that work with `ha-*` web components?
 3. I prefer `<input />` instead of unclosed `<input>`.
 4. similarly for `<img />` and `<br />`, if that's a thing in the rulesets.
+   - Make sure that It will not convert `<div class="line" />` back to `<div class="line"></div>`, I want the self-closing syntax for those.
 5. the line  
     ```ts
     const emit = defineEmits<{
