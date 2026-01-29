@@ -66,7 +66,8 @@ detect_template_remote() {
     # If not found, check URLs
     if [ -z "$template_remote" ]; then
         while IFS= read -r remote; do
-            local url=$(git remote get-url "$remote" 2>/dev/null || echo "")
+            local url
+            url=$(git remote get-url "$remote" 2>/dev/null || echo "")
             if [[ "$url" =~ github\.com/luckydonald/hoass_(plugin[-_])?template(\.git)?$ ]]; then
                 template_remote="$remote"
                 break
@@ -125,18 +126,23 @@ continue_rebase() {
     fi
 
     # Check if conflicts are still unresolved
-    local unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+    # Auto-stage resolved files if conflict markers gone
+    local unmerged_files
+    unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
     if [ -n "$unmerged_files" ]; then
         local needs_manual=true
         for file in $unmerged_files; do
             # Check if file still has conflict markers
-            if ! grep -q "^<<<<<<< " "$file" 2>/dev/null; then
-                # File appears resolved but not staged - add it automatically
-                print_info "Auto-staging resolved file: $file"
-                git add "$file"
-            else
-                needs_manual=false
-                break
+            if [ -f "$file" ]; then
+                if ! grep -q '^<<<<<<< ' "$file" 2>/dev/null; then
+                    # File appears resolved but not staged - add it automatically
+                    print_info "Auto-staging resolved file: $file"
+                    git add "$file"
+                else
+                    print_error "Conflict still present in $file"
+                    needs_manual=false
+                    break
+                fi
             fi
         done
 
@@ -150,7 +156,8 @@ continue_rebase() {
     fi
 
     print_info "Continuing rebase after manual resolution..."
-
+    # Prepare a non-interactive merge commit message so git won't open an editor.
+    # Create or overwrite .git/MERGE_MSG with our composed message (no commented lines).
     # Uncomment merge details in the commit message
     local message_file=""
     if [ -d ".git/rebase-merge" ]; then
@@ -179,8 +186,9 @@ continue_rebase() {
 }
 
 # Function to handle conflicts
-handle_conflicts() {
-    local conflict_files=$(git diff --name-only --diff-filter=U)
+handle_conflicts_for_rebase() {
+    local conflict_files
+    conflict_files=$(git diff --name-only --diff-filter=U)
     local has_auto_resolvable=true
 
     print_warning "Conflicts detected in:"
@@ -188,6 +196,7 @@ handle_conflicts() {
     echo ""
 
     # Check if conflicts can be auto-resolved
+    # Try simple auto-resolution: accept ours when remote deleted local, or accept theirs when local deleted
     for file in $conflict_files; do
         if [ -f "$file" ]; then
             # Check if it's a simple case where remote deleted and local kept
@@ -211,6 +220,7 @@ handle_conflicts() {
         fi
     done
 
+    # If we can auto-stage all, try to continue using our non-interactive continue path
     if [ "$has_auto_resolvable" = true ]; then
         print_info "Attempting auto-resolution..."
         if git add -A && GIT_EDITOR=true git rebase --continue; then
@@ -219,7 +229,7 @@ handle_conflicts() {
         fi
     fi
 
-    # Manual resolution needed
+    # Manual resolution guidance
     print_warning "Manual conflict resolution required"
     echo ""
     echo "Files with conflicts:"
@@ -278,7 +288,7 @@ if [ -n "$(git status --porcelain)" ]; then
     fi
 fi
 
-# Check if rebase is already in progress
+# Check if rebase is already in progress, try to continue
 if is_rebase_in_progress; then
     print_info "Rebase already in progress, attempting to continue..."
     if continue_rebase; then
@@ -303,7 +313,7 @@ if [ -n "$TEMPLATE_REMOTE" ]; then
     # Check if URL is a local path
     if [[ "$remote_url" =~ ^(\.\./|\./|/|[A-Za-z]:) ]]; then
         print_warning "Remote '$TEMPLATE_REMOTE' points to a local path '$remote_url', not a git URL."
-        print_info "This will cause fetch to fail. Consider setting it to the proper git URL:"
+        print_info "This may cause fetch to fail. Consider setting it to the proper git URL:"
         echo "  git remote set-url $TEMPLATE_REMOTE https://github.com/luckydonald/hoass_plugin-template.git"
         read -p "Continue anyway? (y/N) " -n 1 -r
         echo
@@ -343,7 +353,7 @@ if git rebase "$TEMPLATE_REMOTE/mane"; then
     print_success "Rebase completed successfully"
 else
     # Handle conflicts
-    handle_conflicts
+    handle_conflicts_for_rebase
 fi
 
 # Show summary of changed files
