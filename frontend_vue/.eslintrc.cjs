@@ -112,12 +112,9 @@ module.exports = {
     'class-methods-use-this': 'off',
     'no-console': 'warn',
     // Relax template-specific rules that cause noise in copied projects
-    'guard-for-in': 'off',
-    'no-restricted-syntax': 'off',
     '@typescript-eslint/no-use-before-define': ['error', { 'functions': false, 'classes': true, 'variables': true }],
     'no-restricted-globals': ['error', { 'name': 'event', 'message': 'Do not use global event' }],
-    'no-spaced-func': 'off',
-    'prefer-destructuring': 'off',
+    'no-spaced-func': 'off', // deprecated, trouble with TS
     'default-case': 'off',
 
     // Allow unused vars that start with an underscore (common pattern in function args)
