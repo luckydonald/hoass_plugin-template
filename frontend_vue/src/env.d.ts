@@ -83,8 +83,6 @@ declare module 'vue' {
     'ha-expansion-panel': HTMLElement;
     'ha-formfield': HTMLElement;
     'ha-entity-picker': HTMLElement;
-    'mwc-button': HTMLElement;
-    'mwc-list-item': HTMLElement;
   }
 }
 
