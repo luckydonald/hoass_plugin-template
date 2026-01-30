@@ -51,7 +51,8 @@ export default [
   {
     files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
     languageOptions: {
-      parser: js.parsers.espree,
+      // Use espree parser by name for compatibility with various @eslint/js versions
+      parser: 'espree',
       ecmaVersion: 2020,
       sourceType: 'module',
     },
