@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import tsParser from '@typescript-eslint/parser';
+import vueParser from 'vue-eslint-parser';
 
 /** @type { string[] } */
 const OPTIONAL_CONFIGS = [
@@ -54,11 +55,24 @@ export default [
   ...airbnb,
   ...base,
   // Explicit TypeScript languageOptions override so the parserOptions are applied
+  // 1) For TS/TSX files: use the TypeScript parser directly so type-aware rules can run
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.vue'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       parserOptions: tsParserOptions,
+    },
+  },
+  // 2) For Vue SFCs: use the vue-eslint-parser as the outer parser and configure
+  //    its `parser` option to use the TypeScript parser (so script blocks get type info)
+  {
+    files: ['**/*.vue'],
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        parser: tsParser,
+        ...tsParserOptions,
+      },
     },
   },
   ...ts,
