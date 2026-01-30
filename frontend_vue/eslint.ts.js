@@ -29,6 +29,9 @@ export default [
     },
 
     rules: {
+      // Disable stylistic max-len (we prefer no enforced line length limits)
+      '@stylistic/max-len': 'off',
+
       '@typescript-eslint/naming-convention': [
         'error',
         // Allow CSS custom properties ("--kebab-case") and Home Assistant element names ("ha-kebab")
