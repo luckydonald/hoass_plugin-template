@@ -6,13 +6,17 @@
  */
 
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import { configs, plugins, rules } from 'eslint-config-airbnb-extended';
 
-const gitignorePath = path.resolve('.', '.gitignore');
+// Resolve the repository root .gitignore relative to this config file's location.
+// eslint.airbnb.mjs lives in frontend_vue/, repo root is one directory up.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const gitignorePath = path.resolve(__dirname, '..', '.gitignore');
 
 const jsConfig = defineConfig([
   // ESLint recommended config
