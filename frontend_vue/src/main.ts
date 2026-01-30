@@ -15,7 +15,7 @@ interface PluginTemplateCardConfig extends CardConfig {
   title?: string;
   entity?: string;
   clock_display?: string;
-  alarm_list_mode?: 'days' | 'count' | string;
+  alarm_list_mode?: 'days' | 'count';
   alarm_list_count?: number;
   alarm_list_days?: number;
   show_clock?: boolean;
@@ -355,7 +355,7 @@ class PluginTemplateCardEditor extends HTMLElement {
       select.appendChild(optionEl);
     });
 
-    (select as any).value = value;
+    select.value = value;
 
     select.addEventListener('selected', (e: Event) => {
       const target = e.target as HTMLSelectElement;
@@ -411,14 +411,14 @@ class PluginTemplateCardEditor extends HTMLElement {
     if (this._config.entity) {
       entityPicker.setAttribute('value', this._config.entity);
     }
-    (entityPicker as any).hass = this._hass;
-    (entityPicker as any).includeDomains = [
+    entityPicker.hass = this._hass;
+    entityPicker.includeDomains = [
       'sensor',
     ];
     entityPicker.style.width = '100%';
     entityPicker.addEventListener('value-changed', (e: Event) => {
       const customEvent = e as CustomEvent;
-      this._updateConfig({ entity: customEvent.detail.value || '' });
+      this._updateConfig({ entity: customEvent.detail.value ?? '' });
     });
 
     row.appendChild(labelEl);
@@ -449,7 +449,7 @@ customElements.define('plugin-template-card', PluginTemplateCardElement);
 customElements.define('plugin-template-card-editor', PluginTemplateCardEditor);
 
 // Register with Home Assistant's custom card registry
-window.customCards = window.customCards || [];
+window.customCards = window.customCards ?? [];
 window.customCards.push({
   type: 'custom:plugin-template-card',
   name: 'Plugin Template Card',
