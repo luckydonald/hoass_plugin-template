@@ -1,4 +1,5 @@
 import airbnb from './eslint.airbnb.mjs';
+import initConfig from './eslint.init.js';
 import base from './eslint.base.js';
 import ts from './eslint.ts.js';
 import fs from 'fs';
@@ -47,6 +48,8 @@ const tsParserOptions = {
 };
 
 export default [
+  // Ensure init config with parser/parserOptions is applied first
+  ...initConfig,
   // Provide an explicit `ignores` entry so ESLint won't try to use includeIgnoreFile
   {
     ignores: gitignoreEntries,
