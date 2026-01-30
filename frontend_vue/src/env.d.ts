@@ -55,17 +55,6 @@ declare global {
       label: string;
       includeDomains: string[];
     };
-    'mwc-button': HTMLElement & {
-      raised: boolean;
-      outlined: boolean;
-      dense: boolean;
-      slot: string;
-      dialogAction: string;
-    };
-    'mwc-list-item': HTMLElement & {
-      value: string;
-      selected: boolean;
-    };
   }
 
   interface Window {
