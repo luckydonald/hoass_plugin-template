@@ -1,5 +1,12 @@
-import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
+import {
+  createApp,
+  h,
+} from 'vue';
+
 import PluginTemplateCard from './PluginTemplateCard.vue';
+
+import type { App, ComponentPublicInstance } from 'vue';
+
 import type { CardConfig, HomeAssistant } from './types';
 
 interface PluginTemplateCardConfig extends CardConfig {
@@ -323,7 +330,7 @@ class PluginTemplateCardEditor extends HTMLElement {
     name: string,
     label: string,
     value: string,
-    options: Array<{ value: string; label: string; }>,
+    options: { value: string; label: string; }[],
   ): HTMLDivElement {
     const row = document.createElement('div');
 
