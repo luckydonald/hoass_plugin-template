@@ -25,7 +25,6 @@ export default [
       parserOptions: {
         projectService: true,
         tsconfigRootDir: __dirname,
-        project: path.join(__dirname, 'tsconfig.eslint.json'),
       },
     },
 
