@@ -7,7 +7,6 @@ import path from 'path';
 import { fileURLToPath } from 'node:url';
 import tsParser from '@typescript-eslint/parser';
 import vueParser from 'vue-eslint-parser';
-import htmlPlugin from '@html-eslint/eslint-plugin';
 
 /** @type { string[] } */
 const OPTIONAL_CONFIGS = [
@@ -63,6 +62,16 @@ const tsParserOptions = {
   projectService: true,
 };
 
+// Try to import html-eslint plugin dynamically; if it's not installed, continue without it.
+let htmlPlugin = null;
+try {
+  // eslint-disable-next-line no-undef
+  const imported = await import('@html-eslint/eslint-plugin');
+  htmlPlugin = imported.default ?? imported;
+} catch (e) {
+  htmlPlugin = null;
+}
+
 export default [
   // Ensure init config with parser/parserOptions is applied first
   ...initConfig,
@@ -70,15 +79,15 @@ export default [
   {
     ignores: gitignoreEntries,
   },
-  // Register html-eslint plugin so HTML inside template literals is linted
-  {
+  // Register html-eslint plugin so HTML inside template literals is linted (only when available)
+  ...(htmlPlugin ? [{
     plugins: { html: htmlPlugin },
     files: ['**/*.{ts,tsx,js,jsx,vue}'],
     rules: {
-      // Example rule - we keep it off here but plugin will be active for HTML checks
-      'html/require-img-alt': 'warn'
-    }
-  },
+      // Example rule: require alt on images inside embedded HTML
+      'html/require-img-alt': 'warn',
+    },
+  }] : []),
   // JavaScript/TypeScript/Vue configs
   ...airbnb,
   ...base,
