@@ -22,6 +22,14 @@ else
   echo "Node.js not found; cannot run slot checker. Proceeding without slot checks."
 fi
 
+# Run embedded HTML formatter to format .innerHTML template literals
+if command -v node >/dev/null 2>&1; then
+  echo "Formatting embedded HTML in template literals..."
+  node ../scripts/format-embedded-html.js "${FRONTEND_DIR}"
+else
+  echo "Node.js not found; skipping embedded HTML formatting."
+fi
+
 # Helper: check if package.json has a script
 has_script() {
   local name="$1"
