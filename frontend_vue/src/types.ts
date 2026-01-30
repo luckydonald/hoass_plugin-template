@@ -25,7 +25,9 @@ export interface HomeAssistant {
     domain: string,
     service: string,
     data?: Record<string, unknown>,
-    target?: { entity_id?: string | string[]; },
+    target?: {
+      entity_id?: string | string[];
+    },
   ) => Promise<void>;
 }
 

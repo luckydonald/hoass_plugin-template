@@ -330,7 +330,10 @@ class PluginTemplateCardEditor extends HTMLElement {
     name: string,
     label: string,
     value: string,
-    options: { value: string; label: string; }[],
+    options: {
+      value: string;
+      label: string;
+    }[],
   ): HTMLDivElement {
     const row = document.createElement('div');
 
