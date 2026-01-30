@@ -16,6 +16,7 @@ export default [
   {
     files: [
       'eslint.config.js',
+      'eslint.*.js',
       '*.config.js',
       '**/*.config.js',
       '**/*.js',
@@ -28,6 +29,10 @@ export default [
         ecmaVersion: 2020,
         sourceType: 'module'
       }
+    },
+    // Disable the specific typed rule on JS files where type information is not available
+    rules: {
+      '@typescript-eslint/await-thenable': 'off'
     }
   },
   // Ensure TypeScript files are parsed with type information
