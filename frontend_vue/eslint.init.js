@@ -12,6 +12,24 @@ const tsParserOptions = {
 };
 
 export default [
+  // For plain JS config and script files (including eslint.config.js), use espree
+  {
+    files: [
+      'eslint.config.js',
+      '*.config.js',
+      '**/*.config.js',
+      '**/*.js',
+      '**/*.cjs',
+      '**/*.mjs'
+    ],
+    languageOptions: {
+      parser: 'espree',
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module'
+      }
+    }
+  },
   // Ensure TypeScript files are parsed with type information
   {
     files: ['**/*.ts', '**/*.tsx'],
