@@ -28,8 +28,23 @@ function runDprintOnHtml(html, cwd) {
   const tmpFile = path.join(tmpDir, 'snippet.html');
   fs.writeFileSync(tmpFile, html, 'utf8');
   const localDprint = path.join(cwd, 'node_modules', '.bin', 'dprint');
-  const cmd = fs.existsSync(localDprint) ? localDprint : 'dprint';
-  const res = child_process.spawnSync(cmd, ['fmt', tmpFile], { encoding: 'utf8', cwd });
+  let res = null;
+  if (fs.existsSync(localDprint)) {
+    res = child_process.spawnSync(localDprint, ['fmt', tmpFile], { encoding: 'utf8', cwd });
+  } else {
+    // try yarn dlx (works even with PnP)
+    try {
+      res = child_process.spawnSync('yarn', ['dlx', 'dprint', 'fmt', tmpFile], { encoding: 'utf8', cwd, stdio: 'inherit' });
+    } catch (e) { res = null; }
+    if (!res || res.status !== 0) {
+      // try npx
+      try { res = child_process.spawnSync('npx', ['dprint', 'fmt', tmpFile], { encoding: 'utf8', cwd, stdio: 'inherit' }); } catch (e) { res = null; }
+    }
+    if (!res || res.status !== 0) {
+      // try global dprint
+      try { res = child_process.spawnSync('dprint', ['fmt', tmpFile], { encoding: 'utf8', cwd }); } catch (e) { res = null; }
+    }
+  }
   if (res.error) {
     try { fs.unlinkSync(tmpFile); fs.rmdirSync(tmpDir); } catch (e) {}
     throw res.error;
