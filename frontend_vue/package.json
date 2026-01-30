@@ -3,6 +3,7 @@
   "version": "0.0.0-dev0",
   "description": "Lovelace card for Plugin Template for Home Assistant",
   "main": "dist/plugin-template-card.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/luckydonald/hoass_plugin-template.git"
