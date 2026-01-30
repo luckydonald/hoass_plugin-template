@@ -64,12 +64,15 @@ const tsParserOptions = {
 
 // Try to import html-eslint plugin dynamically; if it's not installed, continue without it.
 let htmlPlugin = null;
+let htmlRecommended = [];
 try {
   // eslint-disable-next-line no-undef
   const imported = await import('@html-eslint/eslint-plugin');
   htmlPlugin = imported.default ?? imported;
+  htmlRecommended = (htmlPlugin && htmlPlugin.configs && htmlPlugin.configs.recommended) ? htmlPlugin.configs.recommended : [];
 } catch (e) {
   htmlPlugin = null;
+  htmlRecommended = [];
 }
 
 export default [
@@ -79,6 +82,8 @@ export default [
   {
     ignores: gitignoreEntries,
   },
+  // Apply html-eslint recommended config (if available) so embedded HTML in template literals is linted
+  ...htmlRecommended,
   // Register html-eslint plugin so HTML inside template literals is linted (only when available)
   ...(htmlPlugin ? [{
     plugins: { html: htmlPlugin },
