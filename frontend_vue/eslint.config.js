@@ -40,6 +40,21 @@ if (fs.existsSync(repoGitignore)) {
     .map(l => l.replace(/^\//, ''));
 }
 
+// Also ignore our own ESLint flat-config module files to avoid eslint trying to lint them
+const localEslintConfigFiles = [
+  'eslint.config.js',
+  'eslint.init.js',
+  'eslint.base.js',
+  'eslint.ts.js',
+  'eslint.vue.js',
+  'eslint.airbnb.mjs',
+  'eslint.*.js',
+  'eslint.*.mjs',
+];
+for (const p of localEslintConfigFiles) {
+  if (!gitignoreEntries.includes(p)) gitignoreEntries.push(p);
+}
+
 // TypeScript parser options: point parser to the package's tsconfig.eslint.json so
 // rules that require type information (like @typescript-eslint/await-thenable) work.
 const tsParserOptions = {
