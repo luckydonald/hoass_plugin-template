@@ -95,4 +95,16 @@ export default [
   },
   ...ts,
   ...optionals.flatMap(r => r.status === 'fulfilled' ? (r.value ?? []) : []),
+  // Final safety override: ensure plain JS files are parsed with espree and
+  // disable specific typed rules that require type information on JS files.
+  {
+    files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
+    languageOptions: {
+      parser: 'espree',
+      parserOptions: { ecmaVersion: 2020, sourceType: 'module' }
+    },
+    rules: {
+      '@typescript-eslint/await-thenable': 'off'
+    }
+  }
 ];
