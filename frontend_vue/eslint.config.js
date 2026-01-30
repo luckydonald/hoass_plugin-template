@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'node:url';
 import tsParser from '@typescript-eslint/parser';
 import vueParser from 'vue-eslint-parser';
+import htmlPlugin from '@html-eslint/eslint-plugin';
 
 /** @type { string[] } */
 const OPTIONAL_CONFIGS = [
@@ -68,6 +69,15 @@ export default [
   // Provide an explicit `ignores` entry so ESLint won't try to use includeIgnoreFile
   {
     ignores: gitignoreEntries,
+  },
+  // Register html-eslint plugin so HTML inside template literals is linted
+  {
+    plugins: { html: htmlPlugin },
+    files: ['**/*.{ts,tsx,js,jsx,vue}'],
+    rules: {
+      // Example rule - we keep it off here but plugin will be active for HTML checks
+      'html/require-img-alt': 'warn'
+    }
   },
   // JavaScript/TypeScript/Vue configs
   ...airbnb,
