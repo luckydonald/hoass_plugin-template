@@ -136,6 +136,8 @@ endif
 lint-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Type checking / linting frontend..."
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/frontend_lint.sh
 	@./scripts/frontend_lint.sh "$(FRONTEND_DIR)"
 else
@@ -157,6 +159,8 @@ endif
 format-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Formatting TypeScript..."
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/frontend_format.sh
 	@./scripts/frontend_format.sh "$(FRONTEND_DIR)"
 else
@@ -186,6 +190,8 @@ commit-format:
 	@./scripts/commit-format.sh
 
 release:
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
 
@@ -202,6 +208,8 @@ merge-template:
 template-merge: merge-template
 
 check-slots:
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@if [ -n "$(FRONTEND_DIR)" ]; then \
 		node scripts/check_slots.js "$(FRONTEND_DIR)"; \
 	else \
