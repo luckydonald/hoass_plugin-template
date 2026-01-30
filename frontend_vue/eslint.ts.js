@@ -29,28 +29,17 @@ export default [
     },
 
     rules: {
-      // Allow CSS custom properties ("--kebab-case") and Home Assistant element names ("ha-kebab")
-      // as property/typeProperty/objectLiteralProperty names without triggering the naming convention rule.
-      {
-        selector: 'property',
-        format: null,
-        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
-      },
-      {
-        selector: 'typeProperty',
-        format: null,
-        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
-      },
-      {
-        selector: 'objectLiteralProperty',
-        format: null,
-        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
-      },
       '@typescript-eslint/naming-convention': [
         'error',
+        // Allow CSS custom properties ("--kebab-case") and Home Assistant element names ("ha-kebab")
+        // for property/typeProperty/objectLiteralProperty selectors.
+        { selector: 'property', format: null, filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true } },
+        { selector: 'typeProperty', format: null, filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true } },
+        { selector: 'objectLiteralProperty', format: null, filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true } },
         { selector: 'default', format: ['camelCase', 'PascalCase', 'UPPER_CASE'], leadingUnderscore: 'forbid' },
         { selector: 'property', format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'], leadingUnderscore: 'allow' },
         { selector: 'typeProperty', format: ['camelCase', 'snake_case', 'PascalCase', 'UPPER_CASE'], leadingUnderscore: 'allow' },
+        // Keep existing objectLiteralProperty entry (allows --* already covered above)
         { selector: 'objectLiteralProperty', format: null, filter: { regex: '^--[a-z0-9-]+$', match: true } },
         { selector: 'method', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
         { selector: 'function', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
