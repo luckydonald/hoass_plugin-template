@@ -34,19 +34,15 @@ onUnmounted(() => {
 });
 
 // Computed
-const cardTitle = computed(() => props.config.title || 'Plugin Template');
+const cardTitle = computed(() => props.config.title ?? 'Plugin Template');
 
 // Helper to get entity state
 const getEntityState = (entityId: string) => {
-  if (!props.hass || !props.hass.states) return null;
+  if (!props.hass || !props.hass.states) {
+    return null;
+  }
   return props.hass.states[entityId];
 };
-
-// Helper to call service (prefixed with underscore so unused is ignored by eslint)
-async function _callService(domain: string, service: string, data: any = {}) {
-  if (!props.hass) return;
-  await props.hass.callService(domain, service, data);
-}
 
 // Format time for display
 const formatTime = (date: Date): string => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
