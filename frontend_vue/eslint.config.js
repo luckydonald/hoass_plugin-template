@@ -58,8 +58,8 @@ for (const p of localEslintConfigFiles) {
 // TypeScript parser options: point parser to the package's tsconfig.eslint.json so
 // rules that require type information (like @typescript-eslint/await-thenable) work.
 const tsParserOptions = {
-  project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
   tsconfigRootDir: path.resolve(__dirname),
+  projectService: true,
 };
 
 export default [

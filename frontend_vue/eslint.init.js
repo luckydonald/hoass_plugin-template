@@ -7,8 +7,8 @@ import vueParser from 'vue-eslint-parser';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const tsParserOptions = {
-  project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
   tsconfigRootDir: path.resolve(__dirname),
+  projectService: true,
 };
 
 export default [
