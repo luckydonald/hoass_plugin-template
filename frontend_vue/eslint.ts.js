@@ -29,6 +29,23 @@ export default [
     },
 
     rules: {
+      // Allow CSS custom properties ("--kebab-case") and Home Assistant element names ("ha-kebab")
+      // as property/typeProperty/objectLiteralProperty names without triggering the naming convention rule.
+      {
+        selector: 'property',
+        format: null,
+        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
+      },
+      {
+        selector: 'typeProperty',
+        format: null,
+        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
+      },
+      {
+        selector: 'objectLiteralProperty',
+        format: null,
+        filter: { regex: '^(--[a-z0-9-]+|ha-[a-z0-9-]+)$', match: true }
+      },
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'default', format: ['camelCase', 'PascalCase', 'UPPER_CASE'], leadingUnderscore: 'forbid' },
