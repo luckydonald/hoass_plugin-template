@@ -257,22 +257,8 @@ class PluginTemplateCardEditor extends HTMLElement {
     helpText.style.fontSize = '12px';
     helpText.style.marginTop = '8px';
     helpText.innerHTML = `
-      <p
-        style="margin: 0 0 8px 0;"
-      >
-        <strong>
-          List View (default):
-        </strong>
-        Leave entity empty to show all alarms.
-      </p>
-      <p
-        style="margin: 0;"
-      >
-        <strong>
-          Single Alarm View:
-        </strong>
-        Select a specific alarm entity to show details for one alarm.
-      </p>
+      <p style="margin: 0 0 8px 0;"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
+      <p style="margin: 0;"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
     `;
     wrapper.appendChild(helpText);
 
