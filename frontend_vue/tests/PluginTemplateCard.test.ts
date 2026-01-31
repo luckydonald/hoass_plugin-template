@@ -6,7 +6,7 @@ import {
 
 import PluginTemplateCard from '../src/PluginTemplateCard.vue';
 
-import type { CardConfig, HomeAssistant } from '../src/types';
+import type { CardConfig, HomeAssistant, HassEntity } from '../src/types';
 
 describe('PluginTemplateCard', () => {
   let mockHass: HomeAssistant;
@@ -15,7 +15,7 @@ describe('PluginTemplateCard', () => {
   beforeEach(() => {
     // Create mock Home Assistant instance
     // Build states using bracket notation to avoid object-literal property name linting
-    const states: Record<string, unknown> = {};
+    const states: Record<string, HassEntity> = {};
     states['sensor.test'] = {
       entity_id: 'sensor.test',
       state: 'on',
@@ -30,7 +30,7 @@ describe('PluginTemplateCard', () => {
     };
 
     mockHass = {
-      states: states as any,
+      states,
       services: {},
       user: {
         id: 'test-user',
