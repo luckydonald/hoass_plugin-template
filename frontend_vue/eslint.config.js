@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'node:url';
 import tsParser from '@typescript-eslint/parser';
 import vueParser from 'vue-eslint-parser';
+import importPlugin from 'eslint-plugin-import';
 
 /** @type { string[] } */
 const OPTIONAL_CONFIGS = [
@@ -83,6 +84,9 @@ export default [
   ...airbnb,
   ...base,
   ...html,
+  // Ensure import plugin is available for rules like import/no-unresolved that
+  // may be referenced by presets.
+  { plugins: { import: importPlugin } },
   // Explicit TypeScript languageOptions override so the parserOptions are applied
   // 1) For TS/TSX files: use the TypeScript parser directly so type-aware rules can run
   {
