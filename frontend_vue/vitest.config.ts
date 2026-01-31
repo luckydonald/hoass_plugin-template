@@ -1,5 +1,5 @@
 /** eslint-disable */
-// eslint-disable-next-line import/no-unresolved
+
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

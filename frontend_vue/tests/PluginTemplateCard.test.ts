@@ -14,21 +14,23 @@ describe('PluginTemplateCard', () => {
 
   beforeEach(() => {
     // Create mock Home Assistant instance
-    mockHass = {
-      states: {
-        'sensor.test': {
-          entity_id: 'sensor.test',
-          state: 'on',
-          attributes: {},
-          last_changed: '2024-01-01T00:00:00Z',
-          last_updated: '2024-01-01T00:00:00Z',
-          context: {
-            id: 'test-context',
-            parent_id: null,
-            user_id: null,
-          },
-        },
+    // Build states using bracket notation to avoid object-literal property name linting
+    const states: Record<string, unknown> = {};
+    states['sensor.test'] = {
+      entity_id: 'sensor.test',
+      state: 'on',
+      attributes: {},
+      last_changed: '2024-01-01T00:00:00Z',
+      last_updated: '2024-01-01T00:00:00Z',
+      context: {
+        id: 'test-context',
+        parent_id: null,
+        user_id: null,
       },
+    };
+
+    mockHass = {
+      states: states as any,
       services: {},
       user: {
         id: 'test-user',
