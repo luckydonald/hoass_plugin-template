@@ -26,11 +26,12 @@ describe('main.ts registration', () => {
     await import('../src/main.ts');
 
     // Check that customElements.define was called
-    expect((global.customElements.define as unknown as jest.Mock)).toHaveBeenCalledWith(
+    // vitest's `vi.fn()` is used for mocking; assert call counts without casting to jest.Mock
+    expect(global.customElements.define).toHaveBeenCalledWith(
       'plugin-template-card',
       expect.any(Function),
     );
-    expect((global.customElements.define as unknown as jest.Mock)).toHaveBeenCalledWith(
+    expect(global.customElements.define).toHaveBeenCalledWith(
       'plugin-template-card-editor',
       expect.any(Function),
     );
