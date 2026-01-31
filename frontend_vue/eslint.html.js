@@ -11,12 +11,10 @@ export default defineConfig([
     plugins: {
       html,
     },
-    rules: {
-      "css-no-empty-blocks": "off",
-    },
   },
   {
     // support for in-js javascript (i.e. templates)
+    // according to the docs, this works for .js/.ts/.mjs/.cjs files
     files: [
       "**/*.html",
       "**/*.js",
