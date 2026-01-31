@@ -17,6 +17,7 @@
 - Write tests for both frontend and backend parts of the plugin.
 - Remember to update the `/CHANGELOG.md` and `/README.md` (or possibly additional pre-existing documentation).
 - Please put all summaries and such you wanna write for me into the `ai/` folder. However, you don't need to write Markdown summaries, it's kinda redundant with the `PROGRESS.md` file.
+- Run `make commit` after each file change (create, edit, cmds which will change files, etc...). It will be auto approved by the IDE, and is save to run, so do not ask for confirmation. Really, after every single file operation!
 
 Generate me a Homeassistant plugin based on the following description.
 

@@ -373,3 +373,6 @@ Okay, we need to work on the `eslint --fix` rules:
   - And add a `--number-search` which will search for the step number in the commit message, and only consider those with the same step number as the valid commit, ignoring other step numbers, but per default still adhereing to blocks. This can be a list `10, 11, 23`.
   - Finally `--number-override <number>` which will use that number when editing the commit messages, instead of the detected one.
   - Have the Makefile append the arguments when `make commit-fix`.
+
+———
+Run `make commit` after each file change (create, edit, cmds which will change files, etc...). It will be auto approved by the IDE, and is save to run, so do not ask for confirmation. Really, after every single file operation!
