@@ -1,9 +1,10 @@
 /** eslint-disable */
 // eslint-disable-next-line import/no-unresolved
-import { defineConfig } from 'vitest/config';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import vue from '@vitejs/plugin-vue';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from 'vitest/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

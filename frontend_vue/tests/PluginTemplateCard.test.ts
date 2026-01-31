@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import {
+  beforeEach,
+  describe, expect, it,
+} from 'vitest';
+
 import PluginTemplateCard from '../src/PluginTemplateCard.vue';
-import type { HomeAssistant, CardConfig } from '../src/types';
+
+import type { CardConfig, HomeAssistant } from '../src/types';
 
 describe('PluginTemplateCard', () => {
   let mockHass: HomeAssistant;
