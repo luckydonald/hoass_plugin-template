@@ -431,17 +431,26 @@ print_success "Found $COMMIT_COUNT commit(s) matching criteria"
 
 # Show the commits we will fix
 linebreak
-# If dry-run requested, print header now so the commits are shown under it
-if [ "$DRY_RUN" = true ]; then
-    PRINT_DRY_RUN_HEADER
-fi
 print_info "Commits to fix:"
 for commit_hash in "${COMMIT_HASHES[@]}"; do
     git log --oneline -1 "$commit_hash"
 done
 linebreak
 
-# If dry-run requested, show simulated rebase operations and exit before any destructive actions
+# Ask for the message once for all commits in this batch
+linebreak
+# If dry-run requested, print a prominent red headline now (the user wanted the dry-run delayed until after the message input)
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
+fi
+print_info "Enter a message for all commits in this batch"
+print_warning "Leave empty to keep individual 'running…' messages"
+print_warning "Press Ctrl+C to cancel"
+linebreak
+read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
+linebreak
+
+# If dry-run requested, now show simulated rebase operations and exit before any destructive actions
 if [ "$DRY_RUN" = true ]; then
     # Determine REBASE_PARENT similar to actual rebase logic
     if [ -n "$QUERY_ERROR_COMMIT" ]; then
@@ -559,47 +568,6 @@ if [ "$DRY_RUN" = true ]; then
     echo "⚠ This is a dry-run simulation; no tags or rebase operations were performed."
     exit 0
 fi
-
-# (continue with real rebase flow)
-
-# Determine if there's a query/error commit immediately before the first commit in our list (only in block mode)
-FIRST_COMMIT="${COMMIT_HASHES[0]}"
-PARENT_COMMIT=$(git rev-parse "${FIRST_COMMIT}^" 2>/dev/null || true)
-PARENT_MSG=""
-if [ -n "$PARENT_COMMIT" ]; then
-    PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT" 2>/dev/null || true)
-fi
-
-QUERY_ERROR_COMMIT=""
-if [ -n "$PARENT_MSG" ] && echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-    QUERY_ERROR_COMMIT="$PARENT_COMMIT"
-    print_info "This batch was preceded by: $PARENT_MSG"
-    linebreak
-    print_info "Changes in that commit:"
-    linebreak
-
-    # Disable pager unless USE_PAGER is set
-    if [ -z "$USE_PAGER" ]; then
-        export GIT_PAGER=cat
-    fi
-
-    # Try to use bat for colorized output, fall back to plain git show
-    if command -v bat &> /dev/null; then
-        git show "$PARENT_COMMIT" | bat --style=plain --color=always --language=diff --paging=never
-    else
-        git show "$PARENT_COMMIT"
-    fi
-    linebreak
-fi
-
-# Ask for the message once for all commits in this batch
-linebreak
-print_info "Enter a message for all commits in this batch"
-print_warning "Leave empty to keep individual 'running…' messages"
-print_warning "Press Ctrl+C to cancel"
-linebreak
-read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
-linebreak
 
 # Analyze commits for potential squashing
 print_info "Analyzing commits for potential squashing..."
