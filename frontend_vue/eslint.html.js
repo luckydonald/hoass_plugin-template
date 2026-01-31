@@ -26,15 +26,15 @@ export default defineConfig([
       html,
     },
     rules: {
-      "@html-eslint/attrs-newline": [
+      "html/attrs-newline": [
         "error",
         {
           "closeStyle": "newline",
           "ifAttrsMoreThan": 1,
         },
       ],
-      "@html-eslint/class-spacing": "error",
-      "@html-eslint/element-newline": [
+      "html/class-spacing": "error",
+      "html/element-newline": [
         "error",
         {
           "skip": [
@@ -46,12 +46,12 @@ export default defineConfig([
           ],
         },
       ],
-      "@html-eslint/lowercase": "error",
-      "@html-eslint/no-extra-spacing-attrs": "error",
-      "@html-eslint/no-extra-spacing-text": "error",
-      "@html-eslint/no-multiple-empty-lines": "error",
-      "@html-eslint/no-trailing-spaces": "error",
-      "@html-eslint/quotes": [
+      "html/lowercase": "error",
+      "html/no-extra-spacing-attrs": "error",
+      "html/no-extra-spacing-text": "error",
+      "html/no-multiple-empty-lines": "error",
+      "html/no-trailing-spaces": "error",
+      "html/quotes": [
         "error",
         {
           "enforceTemplatedAttrValue": true,
