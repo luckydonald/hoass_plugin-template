@@ -13,5 +13,9 @@ export default defineConfig([
         plugins: {
             html,
         },
+        rules: {
+            "css-no-empty-blocks": "off",
+
+        },
     },
 ]);
