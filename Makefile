@@ -26,6 +26,28 @@ EXTRA_ARGS := $(filter-out commit-fix,$(MAKECMDGOALS))
 $(eval $(EXTRA_ARGS): ; @:)
 endif
 
+# Support named variable style invocation, e.g.:
+#   make commit-fix START_COMMIT=abc END_COMMIT=def IGNORE_BLOCKS=1
+# Map these to CLI args passed to the script in addition to EXTRA_ARGS/ARGS.
+VAR_ARGS :=
+ifneq ($(strip $(START_COMMIT)),)
+VAR_ARGS += --start-commit $(START_COMMIT)
+endif
+ifneq ($(strip $(END_COMMIT)),)
+VAR_ARGS += --end-commit $(END_COMMIT)
+endif
+ifneq ($(strip $(IGNORE_BLOCKS)),)
+# any non-empty value enables the flag
+VAR_ARGS += --ignore-blocks
+endif
+ifneq ($(strip $(NUMBER_SEARCH)),)
+# expect comma-separated list: 10,11,23
+VAR_ARGS += --number-search $(NUMBER_SEARCH)
+endif
+ifneq ($(strip $(NUMBER_OVERRIDE)),)
+VAR_ARGS += --number-override $(NUMBER_OVERRIDE)
+endif
+
 help:
 	@echo "Plugin Template - Development Commands"
 	@echo ""
@@ -64,7 +86,7 @@ init:
 
 fix-commits:
 	@chmod +x scripts/fix-commits.sh
-	@./scripts/fix-commits.sh $(EXTRA_ARGS) $(ARGS)
+	@./scripts/fix-commits.sh $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
 
 commit-fix: fix-commits
 
