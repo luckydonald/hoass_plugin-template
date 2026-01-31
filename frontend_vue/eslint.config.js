@@ -1,6 +1,7 @@
 import airbnb from './eslint.airbnb.mjs';
 import initConfig from './eslint.init.js';
 import base from './eslint.base.js';
+import html from './eslint.html.js';
 import ts from './eslint.ts.js';
 import fs from 'fs';
 import path from 'path';
@@ -62,18 +63,6 @@ const tsParserOptions = {
   projectService: true,
 };
 
-// Try to import html-eslint plugin dynamically; if it's not installed, continue without it.
-let htmlPlugin = null;
-let htmlRecommended = [];
-try {
-  // eslint-disable-next-line no-undef
-  const imported = await import('@html-eslint/eslint-plugin');
-  htmlPlugin = imported.default ?? imported;
-  htmlRecommended = (htmlPlugin && htmlPlugin.configs && htmlPlugin.configs.recommended) ? htmlPlugin.configs.recommended : [];
-} catch (e) {
-  htmlPlugin = null;
-  htmlRecommended = [];
-}
 
 export default [
   // Ensure init config with parser/parserOptions is applied first
@@ -88,20 +77,10 @@ export default [
     files: ['**/*.{ts,tsx,js,jsx}'],
     rules: { 'local-mark-html/mark-html': 'warn' },
   },
-  // Apply html-eslint recommended config (if available) so embedded HTML in template literals is linted
-  ...htmlRecommended,
-  // Register html-eslint plugin so HTML inside template literals is linted (only when available)
-  ...(htmlPlugin ? [{
-    plugins: { html: htmlPlugin },
-    files: ['**/*.{ts,tsx,js,jsx,vue}'],
-    rules: {
-      // Example rule: require alt on images inside embedded HTML
-      'html/require-img-alt': 'warn',
-    },
-  }] : []),
-  // JavaScript/TypeScript/Vue configs
+  // JavaScript/TypeScript/Vue/HTML configs
   ...airbnb,
   ...base,
+  ...html,
   // Explicit TypeScript languageOptions override so the parserOptions are applied
   // 1) For TS/TSX files: use the TypeScript parser directly so type-aware rules can run
   {
