@@ -136,9 +136,10 @@ END_COMMIT=""
 IGNORE_BLOCKS=false
 NUMBER_SEARCH=()
 NUMBER_OVERRIDE=""
+DRY_RUN=false
 
 print_usage() {
-    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>]"
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run]"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -160,6 +161,8 @@ while [ "$#" -gt 0 ]; do
             ;;
         --number-override)
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
+        --dry-run)
+            DRY_RUN=true; shift;;
         -h|--help)
             print_usage; exit 0;;
         *)
@@ -213,15 +216,21 @@ extract_step_from_msg() {
     echo "$1" | sed -n 's/.*ai: \[\([0-9]*\)\].*/\1/p' | sed 's/^0*//'
 }
 
+# Helper: normalize step number (remove leading zeros, empty -> empty)
+normalize_step() {
+    echo "$1" | sed 's/^0*//'
+}
+
 # Helper: check if a step is allowed by NUMBER_SEARCH (if specified)
 is_step_allowed() {
     local s="$1"
     if [ ${#NUMBER_SEARCH[@]} -eq 0 ]; then
+        # no explicit filter, allow all
         return 0
     fi
     for v in "${NUMBER_SEARCH[@]}"; do
         # trim leading zeros from v
-        v=$(echo "$v" | sed 's/^0*//')
+        v=$(normalize_step "$v")
         if [ "$v" = "$s" ]; then
             return 0
         fi
@@ -237,46 +246,53 @@ for (( idx=${#CANDIDATE_COMMITS[@]}-1; idx>=0; idx-- )); do
     subject=$(git log --format=%s -1 "$chash")
     step=$(extract_step_from_msg "$subject")
     if [ -n "$step" ]; then
+        step_norm=$(normalize_step "$step")
         # If number search is provided, ensure this step is allowed
-        if is_step_allowed "$step"; then
+        if is_step_allowed "$step_norm"; then
             DETECTED_INDEX=$idx
-            DETECTED_STEP=$step
+            DETECTED_STEP=$step_norm
             break
         fi
     fi
 done
 
-if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ]; then
+# If we didn't detect any matching commit but a NUMBER_SEARCH was given, we may still proceed (empty set handled later).
+if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ] && [ ${#NUMBER_SEARCH[@]} -eq 0 ]; then
     print_error "No AI commits found in the specified range matching the criteria"
     print_info "Try --number-search or check the commit range"
     exit 1
 fi
 
-# Determine the step we will use when editing messages
+# Determine the step we will use when editing messages (override only affects editing)
 if [ -n "$NUMBER_OVERRIDE" ]; then
-    EDIT_STEP=$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')
+    EDIT_STEP=$(normalize_step "$NUMBER_OVERRIDE")
 else
     EDIT_STEP="$DETECTED_STEP"
 fi
 
 # PADDED_STEP used later for tags and prompts
-PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
+PADDED_STEP=$(printf "%03d" "${EDIT_STEP:-0}")
 
 # Build the list of commits to operate on
 COMMIT_HASHES=()
 if [ "$IGNORE_BLOCKS" = true ]; then
-    # Include all commits in the candidate range whose step is allowed (or matches override)
+    # Include all commits in the candidate range that match NUMBER_SEARCH (if provided),
+    # otherwise match DETECTED_STEP (the most recent matching step).
     for chash in "${CANDIDATE_COMMITS[@]}"; do
         subject=$(git log --format=%s -1 "$chash")
         step=$(extract_step_from_msg "$subject")
         if [ -n "$step" ]; then
-            if [ -n "$NUMBER_OVERRIDE" ]; then
-                if [ "$(echo "$step" | sed 's/^0*//')" = "$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')" ]; then
+            step_norm=$(normalize_step "$step")
+            if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+                if is_step_allowed "$step_norm"; then
                     COMMIT_HASHES+=("$chash")
                 fi
             else
-                if is_step_allowed "$(echo "$step" | sed 's/^0*//')"; then
-                    COMMIT_HASHES+=("$chash")
+                # no NUMBER_SEARCH provided, fall back to detected step if available
+                if [ -n "$DETECTED_STEP" ]; then
+                    if [ "$step_norm" = "$DETECTED_STEP" ]; then
+                        COMMIT_HASHES+=("$chash")
+                    fi
                 fi
             fi
         fi
@@ -290,8 +306,9 @@ else
             subject=$(git log --format=%s -1 "$chash")
             step=$(extract_step_from_msg "$subject")
 
+            step_norm=$(normalize_step "$step")
             # If no step or not matching the detected step, stop
-            if [ -z "$step" ] || [ "$(echo "$step" | sed 's/^0*//')" != "$(echo "$DETECTED_STEP" | sed 's/^0*//')" ]; then
+            if [ -z "$step_norm" ] || [ "$step_norm" != "$DETECTED_STEP" ]; then
                 break
             fi
 
@@ -338,6 +355,12 @@ for commit_hash in "${COMMIT_HASHES[@]}"; do
     git log --oneline -1 "$commit_hash"
 done
 linebreak
+
+# If dry-run requested, print and exit before any destructive actions
+if [ "$DRY_RUN" = true ]; then
+    PRINT_DRY_RUN_HEADER
+    exit 0
+fi
 
 # Determine if there's a query/error commit immediately before the first commit in our list (only in block mode)
 FIRST_COMMIT="${COMMIT_HASHES[0]}"
