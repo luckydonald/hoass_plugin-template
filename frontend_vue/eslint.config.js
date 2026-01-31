@@ -107,7 +107,10 @@ export default [
       parser: vueParser,
       parserOptions: {
         parser: tsParser,
-        ...tsParserOptions,
+        // Do not spread project into SFC parserOptions; vue processing can
+        // cause the 'file not included' diagnostics. Keep tsconfigRootDir.
+        tsconfigRootDir: tsParserOptions.tsconfigRootDir,
+        extraFileExtensions: ['.vue'],
       },
     },
   },
