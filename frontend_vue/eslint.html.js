@@ -51,12 +51,7 @@ export default defineConfig([
       "html/no-extra-spacing-text": "error",
       "html/no-multiple-empty-lines": "error",
       "html/no-trailing-spaces": "error",
-      "html/quotes": [
-        "error",
-        {
-          "enforceTemplatedAttrValue": true,
-        },
-      ],
+      "html/quotes": ["error", "double"],
     },
   },
 ]);
