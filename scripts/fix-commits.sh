@@ -430,15 +430,18 @@ print_success "Found $COMMIT_COUNT commit(s) matching criteria"
 
 # Show the commits we will fix
 linebreak
+# If dry-run requested, print header now so the commits are shown under it
+if [ "$DRY_RUN" = true ]; then
+    PRINT_DRY_RUN_HEADER
+fi
 print_info "Commits to fix:"
 for commit_hash in "${COMMIT_HASHES[@]}"; do
     git log --oneline -1 "$commit_hash"
 done
 linebreak
 
-# If dry-run requested, print and exit before any destructive actions
+# If dry-run requested, exit before any destructive actions
 if [ "$DRY_RUN" = true ]; then
-    PRINT_DRY_RUN_HEADER
     exit 0
 fi
 
