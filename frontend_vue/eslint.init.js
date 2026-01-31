@@ -6,9 +6,15 @@ import vueParser from 'vue-eslint-parser';
 // Resolve __dirname for this ESM module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const tsParserOptions = {
-  project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
+// Base parser options without `project` (safe for SFCs)
+const tsParserOptionsBase = {
   tsconfigRootDir: path.resolve(__dirname),
+};
+
+// Parser options that include the `project` (used only for .ts/.tsx)
+const tsParserOptionsWithProject = {
+  ...tsParserOptionsBase,
+  project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
 };
 
 export default [
@@ -40,17 +46,20 @@ export default [
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: tsParserOptions,
+      parserOptions: tsParserOptionsWithProject,
     },
   },
   // Ensure Vue SFC script blocks are parsed by the TypeScript parser
+  // but do NOT pass the `project` to the SFC parser options to avoid
+  // "file not included in tsconfig" diagnostics from TypeScript when
+  // eslint inspects the virtual SFC script file.
   {
     files: ['**/*.vue'],
     languageOptions: {
       parser: vueParser,
       parserOptions: {
         parser: tsParser,
-        ...tsParserOptions,
+        ...tsParserOptionsBase,
       },
     },
   },
