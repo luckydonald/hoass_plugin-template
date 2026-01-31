@@ -130,75 +130,196 @@ fi
 # Find the last batch of AI commits
 print_info "Scanning for AI commit batches..."
 
-# Look for unified format: ✨ ai: [NNN] message… (X/Y)
-# Works with or without TEMPLATE prefix
-LAST_AI=$(git log --format=%s -1 --grep="ai: \[[0-9]\+\]")
+# Parse CLI arguments
+START_COMMIT=""
+END_COMMIT=""
+IGNORE_BLOCKS=false
+NUMBER_SEARCH=()
+NUMBER_OVERRIDE=""
 
-if [ -z "$LAST_AI" ]; then
-    print_error "No AI commits found in expected format"
-    print_info "Expected format: ✨ ai: [NNN] message… (X/Y)"
+print_usage() {
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>]"
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --start-commit)
+            START_COMMIT="$2"; shift 2 || true;;
+        --end-commit)
+            END_COMMIT="$2"; shift 2 || true;;
+        --ignore-blocks)
+            IGNORE_BLOCKS=true; shift;;
+        --number-search)
+            if [ -n "$2" ]; then
+                IFS=',' read -r -a NUMBER_SEARCH <<< "$2"
+                shift 2 || true
+            else
+                print_error "--number-search requires a comma-separated list"
+                exit 1
+            fi
+            ;;
+        --number-override)
+            NUMBER_OVERRIDE="$2"; shift 2 || true;;
+        -h|--help)
+            print_usage; exit 0;;
+        *)
+            # stop parsing on unknown argument (allow other wrappers)
+            break;;
+    esac
+done
+
+# Validate commits if provided
+if [ -n "$START_COMMIT" ]; then
+    if ! git cat-file -e "${START_COMMIT}^{commit}" 2>/dev/null; then
+        print_error "Start commit '$START_COMMIT' not found"
+        exit 1
+    fi
+fi
+if [ -n "$END_COMMIT" ]; then
+    if ! git cat-file -e "${END_COMMIT}^{commit}" 2>/dev/null; then
+        print_error "End commit '$END_COMMIT' not found"
+        exit 1
+    fi
+fi
+
+# Build candidate commit list (chronological: oldest -> newest)
+if [ -n "$START_COMMIT" ]; then
+    RANGE="${START_COMMIT}^..${END_COMMIT:-HEAD}"
+    mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse "$RANGE")
+else
+    if [ -n "$END_COMMIT" ]; then
+        mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse "${END_COMMIT}")
+    else
+        mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse HEAD)
+    fi
+fi
+
+if [ ${#CANDIDATE_COMMITS[@]} -eq 0 ]; then
+    print_error "No commits found in the specified range"
     exit 1
 fi
 
-# Extract the step number (remove leading zeros)
-STEP=$(echo "$LAST_AI" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
-PADDED_STEP=$(printf "%03d" "$STEP")
+# Helper: extract step number from commit subject (returns empty if none)
+extract_step_from_msg() {
+    echo "$1" | sed -n 's/.*ai: \[\([0-9]*\)\].*/\1/p' | sed 's/^0*//'
+}
 
-print_info "Found AI commits for step [$PADDED_STEP]"
+# Helper: check if a step is allowed by NUMBER_SEARCH (if specified)
+is_step_allowed() {
+    local s="$1"
+    if [ ${#NUMBER_SEARCH[@]} -eq 0 ]; then
+        return 0
+    fi
+    for v in "${NUMBER_SEARCH[@]}"; do
+        # trim leading zeros from v
+        v=$(echo "$v" | sed 's/^0*//')
+        if [ "$v" = "$s" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
-# Find all consecutive commits with the same step number, stopping at query/error or different steps
-COMMIT_HASHES=()
-COMMIT_COUNT=0
-
-# Start from the last AI commit and walk backwards
-CURRENT_COMMIT=$(git log --format=%H -1 --grep="ai: \[$PADDED_STEP\]")
-
-while [ -n "$CURRENT_COMMIT" ]; do
-    # Check if this commit has the correct step number
-    COMMIT_MSG=$(git log --format=%s -1 "$CURRENT_COMMIT")
-    if echo "$COMMIT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
-        # This is part of our batch
-        COMMIT_HASHES=("$CURRENT_COMMIT" "${COMMIT_HASHES[@]}")
-        COMMIT_COUNT=$((COMMIT_COUNT + 1))
-
-        # Get the parent commit
-        PARENT_COMMIT=$(git rev-parse "$CURRENT_COMMIT^" 2>/dev/null)
-        if [ -z "$PARENT_COMMIT" ]; then
-            # No more parents, stop
+# Find the last (newest) commit in the candidate range that matches ai: [NNN]
+DETECTED_INDEX=-1
+DETECTED_STEP=""
+for (( idx=${#CANDIDATE_COMMITS[@]}-1; idx>=0; idx-- )); do
+    chash=${CANDIDATE_COMMITS[$idx]}
+    subject=$(git log --format=%s -1 "$chash")
+    step=$(extract_step_from_msg "$subject")
+    if [ -n "$step" ]; then
+        # If number search is provided, ensure this step is allowed
+        if is_step_allowed "$step"; then
+            DETECTED_INDEX=$idx
+            DETECTED_STEP=$step
             break
         fi
-
-        # Check the parent's message
-        PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
-
-        # Stop if parent is a query/error update
-        if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-            print_info "Stopping at query/error commit: $PARENT_MSG"
-            break
-        fi
-
-        # Stop if parent is a different AI step
-        if echo "$PARENT_MSG" | grep -q "ai: \[[0-9]\+\]" && ! echo "$PARENT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
-            print_info "Stopping at different AI step: $PARENT_MSG"
-            break
-        fi
-
-        # Continue with parent
-        CURRENT_COMMIT="$PARENT_COMMIT"
-    else
-        # This commit doesn't match our step, stop
-        break
     fi
 done
 
-if [ "$COMMIT_COUNT" -eq 0 ]; then
-    print_error "No commits found for step [$PADDED_STEP]"
+if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ]; then
+    print_error "No AI commits found in the specified range matching the criteria"
+    print_info "Try --number-search or check the commit range"
     exit 1
 fi
 
-print_success "Found $COMMIT_COUNT commit(s) in this connected batch"
+# Determine the step we will use when editing messages
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    EDIT_STEP=$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')
+else
+    EDIT_STEP="$DETECTED_STEP"
+fi
 
-# Show the commits
+# Build the list of commits to operate on
+COMMIT_HASHES=()
+if [ "$IGNORE_BLOCKS" = true ]; then
+    # Include all commits in the candidate range whose step is allowed (or matches override)
+    for chash in "${CANDIDATE_COMMITS[@]}"; do
+        subject=$(git log --format=%s -1 "$chash")
+        step=$(extract_step_from_msg "$subject")
+        if [ -n "$step" ]; then
+            if [ -n "$NUMBER_OVERRIDE" ]; then
+                if [ "$(echo "$step" | sed 's/^0*//')" = "$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')" ]; then
+                    COMMIT_HASHES+=("$chash")
+                fi
+            else
+                if is_step_allowed "$(echo "$step" | sed 's/^0*//')"; then
+                    COMMIT_HASHES+=("$chash")
+                fi
+            fi
+        fi
+    done
+else
+    # Connected-block mode: walk backwards from detected index and stop at query/error or different step
+    if [ "$DETECTED_INDEX" -ge 0 ]; then
+        idx=$DETECTED_INDEX
+        while [ $idx -ge 0 ]; do
+            chash=${CANDIDATE_COMMITS[$idx]}
+            subject=$(git log --format=%s -1 "$chash")
+            step=$(extract_step_from_msg "$subject")
+
+            # If no step or not matching the detected step, stop
+            if [ -z "$step" ] || [ "$(echo "$step" | sed 's/^0//')" != "$(echo "$DETECTED_STEP" | sed 's/^0//')" ]; then
+                break
+            fi
+
+            # Prepend to keep chronological order
+            COMMIT_HASHES=("$chash" "${COMMIT_HASHES[@]}")
+
+            # Prepare to check parent (in candidate array)
+            idx=$((idx-1))
+            if [ $idx -lt 0 ]; then
+                break
+            fi
+
+            parent_chash=${CANDIDATE_COMMITS[$idx]}
+            parent_msg=$(git log --format=%s -1 "$parent_chash")
+
+            # If parent is a query/error update, stop (do not include parent)
+            if echo "$parent_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                print_info "Stopping at query/error commit: $parent_msg"
+                break
+            fi
+
+            # If parent is a different AI step, stop
+            if echo "$parent_msg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$parent_msg" | grep -q "ai: \[$DETECTED_STEP\]"; then
+                print_info "Stopping at different AI step: $parent_msg"
+                break
+            fi
+        done
+    fi
+fi
+
+COMMIT_COUNT=${#COMMIT_HASHES[@]}
+
+if [ "$COMMIT_COUNT" -eq 0 ]; then
+    print_error "No commits found matching the specified criteria"
+    exit 1
+fi
+
+print_success "Found $COMMIT_COUNT commit(s) matching criteria"
+
+# Show the commits we will fix
 linebreak
 print_info "Commits to fix:"
 for commit_hash in "${COMMIT_HASHES[@]}"; do
@@ -206,13 +327,16 @@ for commit_hash in "${COMMIT_HASHES[@]}"; do
 done
 linebreak
 
-# Check if this batch was preceded by a query/error update
+# Determine if there's a query/error commit immediately before the first commit in our list (only in block mode)
 FIRST_COMMIT="${COMMIT_HASHES[0]}"
-PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
-PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
+PARENT_COMMIT=$(git rev-parse "${FIRST_COMMIT}^" 2>/dev/null || true)
+PARENT_MSG=""
+if [ -n "$PARENT_COMMIT" ]; then
+    PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT" 2>/dev/null || true)
+fi
 
 QUERY_ERROR_COMMIT=""
-if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
+if [ -n "$PARENT_MSG" ] && echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
     QUERY_ERROR_COMMIT="$PARENT_COMMIT"
     print_info "This batch was preceded by: $PARENT_MSG"
     linebreak
