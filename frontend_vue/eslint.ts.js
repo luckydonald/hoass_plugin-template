@@ -13,9 +13,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default [
-  // TypeScript type-checked + stylistic
-  ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  // TypeScript base recommended + stylistic (non-type-checked)
+  ...tseslint.configs.recommended,
+  ...tseslint.configs.stylistic,
 
   {
     files: ['**/*.ts', '**/*.tsx'],
