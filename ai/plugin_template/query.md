@@ -366,3 +366,9 @@ Okay, we need to work on the `eslint --fix` rules:
 - For running those tests you must navigate to `../hoass_calendar-alarm-clock` first, that's the actual templated plugin where I am facing the issues in.
   - I merged the newest version of this template into that directory- So you can test now. I only meant you to run the tests there, then edit here, and then let me merge it, I will talk to you again afterwards.
   - In most regards that dir should be our templated result, so `frontend_vue` became `frontend`, otherwise it's pretty much having our tooling.
+———
+  - For the fix commit script which renames the commits, add a startup parameter `--start-commit <commit>` which will only consider commits after that commit (including that commit).
+  - Add a `--end-commit <commit>` which will only consider commits up to that commit (including that commit).
+  - Also add `--ignore-blocks` where it will consider commits separated by other commit messages, and also renames those, if they match the criteria.
+  - And add a `--number-search` which will search for the step number in the commit message, and only consider those with the same step number as the valid commit, ignoring other step numbers, but per default still adhereing to blocks. 
+  - Finally `--number-override <number>` which will use that number when editing the commit messages, instead of the detected one.
