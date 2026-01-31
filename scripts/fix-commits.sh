@@ -185,12 +185,21 @@ fi
 # Build candidate commit list (chronological: oldest -> newest)
 if [ -n "$START_COMMIT" ]; then
     RANGE="${START_COMMIT}^..${END_COMMIT:-HEAD}"
-    mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse "$RANGE")
+    CANDIDATE_COMMITS=()
+    while IFS= read -r line; do
+        CANDIDATE_COMMITS+=("$line")
+    done < <(git rev-list --reverse "$RANGE")
 else
     if [ -n "$END_COMMIT" ]; then
-        mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse "${END_COMMIT}")
+        CANDIDATE_COMMITS=()
+        while IFS= read -r line; do
+            CANDIDATE_COMMITS+=("$line")
+        done < <(git rev-list --reverse "${END_COMMIT}")
     else
-        mapfile -t CANDIDATE_COMMITS < <(git rev-list --reverse HEAD)
+        CANDIDATE_COMMITS=()
+        while IFS= read -r line; do
+            CANDIDATE_COMMITS+=("$line")
+        done < <(git rev-list --reverse HEAD)
     fi
 fi
 
