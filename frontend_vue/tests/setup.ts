@@ -20,6 +20,6 @@ global.customElements = {
 } as unknown as CustomElementRegistry;
 
 // Mock window.customCards
-(global as unknown as any).window = {
+(global as unknown as unknown).window = {
   customCards: [],
 };
