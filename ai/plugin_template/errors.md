@@ -732,3 +732,5 @@ Also, it should edit the existing message the editor would display, not create (
 ———
 ./scripts/release.sh: line 162: syntax error near unexpected token `)'
 ./scripts/release.sh: SC1075: Use 'elif' instead of 'else if' (or put 'if' on new line if nesting).
+./scripts/fix-commits.sh: line 188: mapfile: command not found
+
