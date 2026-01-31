@@ -79,6 +79,15 @@ help:
 	@echo "  merge-template    - Merge template's mane branch into current branch"
 	@echo "  template-merge-   Alias for 'merge-template' above"
 	@echo "  help           - Show this help message"
+	@echo ""
+	@echo "Examples for 'commit-fix' (three supported styles):"
+	@echo "  1) Portable (recommended) - pass all flags via ARGS string:"
+	@echo "       make commit-fix ARGS=\"--start-commit abc123 --end-commit def456 --ignore-blocks\""
+	@echo "  2) Named variables - convenient and portable:"
+	@echo "       make commit-fix START_COMMIT=abc123 END_COMMIT=def456 IGNORE_BLOCKS=1 NUMBER_SEARCH=10,11,23 NUMBER_OVERRIDE=10"
+	@echo "  3) Less-portable - pass dash-args as goals (may be treated as make options on some systems):"
+	@echo "       make commit-fix --start-commit abc123 --ignore-blocks"
+	@echo ""
 
 init:
 	@chmod +x scripts/init.sh
