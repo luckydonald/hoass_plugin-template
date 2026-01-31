@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { mount as _mount } from '@vue/test-utils';
 import {
   beforeEach,
   describe, expect, it, vi,
@@ -9,7 +9,7 @@ global.customElements = {
   define: vi.fn(),
   get: vi.fn(),
   whenDefined: vi.fn(),
-} as any;
+} as unknown as CustomElementRegistry;
 
 // Mock window.customCards
 (global as any).window = {
@@ -26,11 +26,11 @@ describe('main.ts registration', () => {
     await import('../src/main.ts');
 
     // Check that customElements.define was called
-    expect(global.customElements.define).toHaveBeenCalledWith(
+    expect((global.customElements.define as unknown as jest.Mock)).toHaveBeenCalledWith(
       'plugin-template-card',
       expect.any(Function),
     );
-    expect(global.customElements.define).toHaveBeenCalledWith(
+    expect((global.customElements.define as unknown as jest.Mock)).toHaveBeenCalledWith(
       'plugin-template-card-editor',
       expect.any(Function),
     );
