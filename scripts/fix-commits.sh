@@ -26,6 +26,7 @@ RECOVERY_TAG_TEMPLATE="fix-commits-backup-step-{step}_{date}"
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YIGHLIGHT='\033[1;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 GRAY='\033[0;37m'
@@ -440,10 +441,126 @@ for commit_hash in "${COMMIT_HASHES[@]}"; do
 done
 linebreak
 
-# If dry-run requested, exit before any destructive actions
+# If dry-run requested, show simulated rebase operations and exit before any destructive actions
 if [ "$DRY_RUN" = true ]; then
+    # Determine REBASE_PARENT similar to actual rebase logic
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        REBASE_PARENT=$(git rev-parse "$QUERY_ERROR_COMMIT^" 2>/dev/null || true)
+    else
+        FIRST_COMMIT="${COMMIT_HASHES[0]}"
+        REBASE_PARENT=$(git rev-parse "${FIRST_COMMIT}^" 2>/dev/null || true)
+    fi
+
+    if [ -z "$REBASE_PARENT" ]; then
+        print_warning "Could not determine rebase parent; aborting dry-run simulation"
+        exit 0
+    fi
+
+    # Build squash map (hashes that should be squashed into previous)
+    SQUASH_SET=()
+    for pair in "${SQUASH_COMMITS[@]}"; do
+        idx2=$(echo "$pair" | cut -d: -f2)
+        if [ -n "${COMMIT_HASHES[$idx2]}" ]; then
+            SQUASH_SET+=("${COMMIT_HASHES[$idx2]}")
+        fi
+    done
+
+    # Build modify set from COMMIT_HASHES and optional QUERY_ERROR_COMMIT
+    MODIFY_SET=("${COMMIT_HASHES[@]}")
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        MODIFY_SET+=("$QUERY_ERROR_COMMIT")
+    fi
+
+    # Helper to check membership
+    in_set() {
+        local needle="$1"; shift
+        for x in "$@"; do
+            if [ "$x" = "$needle" ]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
+    # Build the todo commits (what git rebase -i would show) from REBASE_PARENT..HEAD
+    TODO_COMMITS=()
+    while IFS= read -r line; do
+        TODO_COMMITS+=("$line")
+    done < <(git rev-list --reverse "$REBASE_PARENT..HEAD")
+
+    # Simulate walking the todo and print operations
+    echo "🧾 Simulated rebase todo (from $REBASE_PARENT..HEAD):"
+    echo
+    substep_counter=1
+    for th in "${TODO_COMMITS[@]}"; do
+        subj=$(git log --format='%s' -1 "$th" 2>/dev/null || true)
+        # Determine if this commit will be squashed
+        should_squash=false
+        if in_set "$th" "${SQUASH_SET[@]}"; then
+            should_squash=true
+        fi
+
+        # Determine if we'll modify this commit
+        will_modify=false
+        if in_set "$th" "${MODIFY_SET[@]}"; then
+            will_modify=true
+        fi
+
+        if [ "$should_squash" = true ]; then
+            # Squash line
+            echo "🔀 squash $th $subj"
+            # If commit is also modified, note that it'll be squashed (message merging)
+            if [ "$will_modify" = true ]; then
+                echo "    🧩 (will be squashed into previous commit; modified message may be combined)"
+            fi
+        else
+            # pick line
+            echo "✅ pick   $th $subj"
+            if [ "$will_modify" = true ]; then
+                # Show what the rebase editor would exec: compute new message
+                # For AI commits, compute STEP and SUBSTEP from the commit message
+                if echo "$subj" | grep -qE "ai: \[[0-9]+\]"; then
+                    orig_step=$(echo "$subj" | sed -n 's/.*ai: \[\([0-9]*\)\].*/\1/p' | sed 's/^0*//')
+                    # Extract current substep if present
+                    orig_substep=$(echo "$subj" | sed -n 's/.*(\([0-9]*\)\/.*)/\1/p' || true)
+                    # Determine the step to write: if NUMBER_OVERRIDE specified, use that, else use orig_step
+                    if [ -n "$NUMBER_OVERRIDE" ]; then
+                        write_step=$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')
+                    else
+                        write_step="$orig_step"
+                    fi
+                    padded_step=$(printf "%03d" "${write_step:-0}")
+                    # Determine message body: if BATCH_MESSAGE provided, use it; otherwise keep existing unless it's 'running…'
+                    if [ -n "$BATCH_MESSAGE" ]; then
+                        new_body="$BATCH_MESSAGE"
+                    else
+                        # Extract between ] and (  -> message body
+                        new_body=$(echo "$subj" | sed 's/.*\] \(.*\) (.*/\1/' || true)
+                        if echo "$new_body" | grep -qE "^running[.…]+$"; then
+                            new_body="running…"
+                        fi
+                    fi
+                    # If this commit will be amended (i.e. will_modify true), show the amended message
+                    echo "    ✏️ will amend message -> ✉️ \"✨ ai: [$padded_step] $new_body (SUB/$TOTAL)\""
+                    # Note: SUB and TOTAL are placeholders here in the simulation; actual SUB depends on renumbering during squash
+                    substep_counter=$((substep_counter + 1))
+                else
+                    # Non-AI commit modified (e.g., query/error) will be appended with BATCH_MESSAGE
+                    if [ -n "$BATCH_MESSAGE" ]; then
+                        echo "    ✏️ will amend message -> \"$subj: $BATCH_MESSAGE\""
+                    else
+                        echo "    ✏️ will keep existing message unless BATCH_MESSAGE provided"
+                    fi
+                fi
+            fi
+        fi
+    done
+    echo
+    echo "⚠ This is a dry-run simulation; no tags or rebase operations were performed."
     exit 0
 fi
+
+# (continue with real rebase flow)
 
 # Determine if there's a query/error commit immediately before the first commit in our list (only in block mode)
 FIRST_COMMIT="${COMMIT_HASHES[0]}"
