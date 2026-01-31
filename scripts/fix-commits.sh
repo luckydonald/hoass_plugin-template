@@ -64,6 +64,14 @@ linebreak() {
   echo ""
 }
 
+# Dry-run header printer (used when --dry-run is passed)
+PRINT_DRY_RUN_HEADER() {
+    linebreak
+    print_info "Dry-run mode: the script will not create tags or perform a rebase."
+    print_info "Selected commits (shown in chronological order):"
+    linebreak
+}
+
 print_header "Fix AI Commit Messages"
 
 # Get the repository root
