@@ -4,7 +4,7 @@ import html from "@html-eslint/eslint-plugin";
 export default defineConfig([
     {
         files: [
-          "**/*.html"
+          "**/*.html",
         ],
         // When using the recommended rules (or "html/all" for all rules)
         extends: ["html/recommended"],
