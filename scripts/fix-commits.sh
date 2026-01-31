@@ -250,6 +250,9 @@ else
     EDIT_STEP="$DETECTED_STEP"
 fi
 
+# PADDED_STEP used later for tags and prompts
+PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
+
 # Build the list of commits to operate on
 COMMIT_HASHES=()
 if [ "$IGNORE_BLOCKS" = true ]; then
@@ -279,7 +282,7 @@ else
             step=$(extract_step_from_msg "$subject")
 
             # If no step or not matching the detected step, stop
-            if [ -z "$step" ] || [ "$(echo "$step" | sed 's/^0//')" != "$(echo "$DETECTED_STEP" | sed 's/^0//')" ]; then
+            if [ -z "$step" ] || [ "$(echo "$step" | sed 's/^0*//')" != "$(echo "$DETECTED_STEP" | sed 's/^0*//')" ]; then
                 break
             fi
 
