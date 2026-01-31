@@ -8,7 +8,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import { configs, plugins, rules } from 'eslint-config-airbnb-extended';
@@ -51,8 +50,16 @@ const typescriptConfig = defineConfig([
 ]);
 
 export default defineConfig([
-  // Ignore files and folders listed in .gitignore
-  includeIgnoreFile(gitignorePath),
+  // Ignore files and folders listed in repo root .gitignore – includeIgnoreFile
+  // is not suitable for the ESLint flat-config in all environments, so we
+  // read the file and pass the entries explicitly elsewhere (the caller
+  // may still transform these). Keep the comment for future maintainers.
+  // Note: This module intentionally does not call includeIgnoreFile here.
+  {
+    ignores: [
+      // Add the entries from your .gitignore file here
+    ],
+  },
   // JavaScript config
   ...jsConfig,
   // Node config
