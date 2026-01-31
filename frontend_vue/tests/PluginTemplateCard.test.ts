@@ -6,7 +6,7 @@ import {
 
 import PluginTemplateCard from '../src/PluginTemplateCard.vue';
 
-import type { CardConfig, HomeAssistant, HassEntity } from '../src/types';
+import type { CardConfig, HassEntity, HomeAssistant } from '../src/types';
 
 describe('PluginTemplateCard', () => {
   let mockHass: HomeAssistant;
