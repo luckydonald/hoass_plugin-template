@@ -77,6 +77,8 @@ export default [
   {
     ignores: gitignoreEntries,
   },
+  // Also ignore TS declaration files as they're not part of lint type-checking here
+  { ignores: ['**/*.d.ts'] },
   // Local plugin to auto-mark embedded HTML template literals
   {
     plugins: { 'local-mark-html': await import('./eslint.local.mark-html.mjs').then(m => m.default ?? m) },
