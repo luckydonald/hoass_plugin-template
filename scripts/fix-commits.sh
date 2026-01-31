@@ -440,18 +440,24 @@ linebreak
 # Ask for the message once for all commits in this batch
 linebreak
 # If dry-run requested, print a prominent red headline now (the user wanted the dry-run delayed until after the message input)
-if [ "$DRY_RUN" = true ]; then
-    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
-fi
+#if [ "$DRY_RUN" = true ]; then
+#    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
+#fi
 print_info "Enter a message for all commits in this batch"
 print_warning "Leave empty to keep individual 'running…' messages"
 print_warning "Press Ctrl+C to cancel"
 linebreak
+# Show a short red dry-run reminder at the prompt time (so user knows this is a dry-run), but do not run the simulation yet
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${RED}⚠ DRY RUN: No changes will be made. A simulated rebase will be shown after you enter the message.${NC}"
+fi
 read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
 linebreak
 
 # If dry-run requested, now show simulated rebase operations and exit before any destructive actions
 if [ "$DRY_RUN" = true ]; then
+    # Print the dry-run header
+    PRINT_DRY_RUN_HEADER
     # Determine REBASE_PARENT similar to actual rebase logic
     if [ -n "$QUERY_ERROR_COMMIT" ]; then
         REBASE_PARENT=$(git rev-parse "$QUERY_ERROR_COMMIT^" 2>/dev/null || true)
