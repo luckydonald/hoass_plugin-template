@@ -16,7 +16,9 @@ export default [
       parser: vueParser,
       parserOptions: {
         parser: tsParser,
-        project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
+        // Do not enable project for SFCs here — some environments cannot
+        // resolve SFC virtual files into the tsconfig `include` set. Keep
+        // tsconfigRootDir for fallback, and allow .vue extensions.
         tsconfigRootDir: __dirname,
         extraFileExtensions: ['.vue'],
       },
