@@ -16,6 +16,16 @@ BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
 .PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
 
+# If user runs: make commit-fix --start-commit <hash> ...
+# then MAKECMDGOALS contains: commit-fix --start-commit <hash> ...
+# Capture those extra words and expose them as $(EXTRA_ARGS), and
+# create no-op targets for them so make doesn't try to build them.
+ifeq ($(firstword $(MAKECMDGOALS)),commit-fix)
+EXTRA_ARGS := $(filter-out commit-fix,$(MAKECMDGOALS))
+# define no-op targets for each extra arg to avoid 'No rule to make target' errors
+$(eval $(EXTRA_ARGS): ; @:)
+endif
+
 help:
 	@echo "Plugin Template - Development Commands"
 	@echo ""
@@ -54,7 +64,7 @@ init:
 
 fix-commits:
 	@chmod +x scripts/fix-commits.sh
-	@./scripts/fix-commits.sh
+	@./scripts/fix-commits.sh $(EXTRA_ARGS) $(ARGS)
 
 commit-fix: fix-commits
 
