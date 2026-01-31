@@ -60,7 +60,9 @@ for (const p of localEslintConfigFiles) {
 // rules that require type information (like @typescript-eslint/await-thenable) work.
 const tsParserOptions = {
   tsconfigRootDir: path.resolve(__dirname),
-  projectService: true,
+  // Ensure we do not enable projectService here — that option conflicts with
+  // parserOptions.project in some plugin combinations. Disable it explicitly.
+  projectService: false,
 };
 
 
