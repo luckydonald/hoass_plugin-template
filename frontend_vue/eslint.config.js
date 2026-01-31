@@ -66,6 +66,9 @@ const tsParserOptions = {
   projectService: false,
 };
 
+// Explicit absolute project path for parsers that need it
+tsParserOptions.project = [path.resolve(__dirname, 'tsconfig.eslint.json')];
+
 
 export default [
   // Ensure init config with parser/parserOptions is applied first
