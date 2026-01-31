@@ -238,6 +238,18 @@ is_step_allowed() {
     return 1
 }
 
+# Helper: check if array contains value
+array_contains() {
+    local val="$1"; shift
+    local item
+    for item in "$@"; do
+        if [ "$item" = "$val" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 # Find the last (newest) commit in the candidate range that matches ai: [NNN]
 DETECTED_INDEX=-1
 DETECTED_STEP=""
@@ -298,44 +310,104 @@ if [ "$IGNORE_BLOCKS" = true ]; then
         fi
     done
 else
-    # Connected-block mode: walk backwards from detected index and stop at query/error or different step
-    if [ "$DETECTED_INDEX" -ge 0 ]; then
-        idx=$DETECTED_INDEX
-        while [ $idx -ge 0 ]; do
+    # Connected-block mode
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        # For each matching commit in the candidate range, collect its connected block
+        for (( idx=${#CANDIDATE_COMMITS[@]}-1; idx>=0; idx-- )); do
             chash=${CANDIDATE_COMMITS[$idx]}
             subject=$(git log --format=%s -1 "$chash")
             step=$(extract_step_from_msg "$subject")
-
+            if [ -z "$step" ]; then
+                continue
+            fi
             step_norm=$(normalize_step "$step")
-            # If no step or not matching the detected step, stop
-            if [ -z "$step_norm" ] || [ "$step_norm" != "$DETECTED_STEP" ]; then
-                break
+            if ! is_step_allowed "$step_norm"; then
+                continue
             fi
 
-            # Prepend to keep chronological order
-            COMMIT_HASHES=("$chash" "${COMMIT_HASHES[@]}")
+            # Walk backwards from idx to gather the connected block for this step
+            block=()
+            j=$idx
+            while [ $j -ge 0 ]; do
+                ch=${CANDIDATE_COMMITS[$j]}
+                subj=$(git log --format=%s -1 "$ch")
+                st=$(extract_step_from_msg "$subj")
+                st_norm=$(normalize_step "$st")
 
-            # Prepare to check parent (in candidate array)
-            idx=$((idx-1))
-            if [ $idx -lt 0 ]; then
-                break
-            fi
+                # Stop if step differs
+                if [ -z "$st_norm" ] || [ "$st_norm" != "$step_norm" ]; then
+                    break
+                fi
 
-            parent_chash=${CANDIDATE_COMMITS[$idx]}
-            parent_msg=$(git log --format=%s -1 "$parent_chash")
+                # Prepend to block (so block will be chronological)
+                block=("$ch" "${block[@]}")
 
-            # If parent is a query/error update, stop (do not include parent)
-            if echo "$parent_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
-                print_info "Stopping at query/error commit: $parent_msg"
-                break
-            fi
+                # Check parent commit message (previous in candidate list)
+                pj=$((j-1))
+                if [ $pj -lt 0 ]; then
+                    break
+                fi
+                pch=${CANDIDATE_COMMITS[$pj]}
+                pmsg=$(git log --format=%s -1 "$pch")
 
-            # If parent is a different AI step, stop
-            if echo "$parent_msg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$parent_msg" | grep -q "ai: \[$DETECTED_STEP\]"; then
-                print_info "Stopping at different AI step: $parent_msg"
-                break
-            fi
+                # Stop if parent is query/error or a different ai step
+                if echo "$pmsg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                    break
+                fi
+                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$pmsg" | grep -q "ai: \[$step_norm\]"; then
+                    break
+                fi
+
+                j=$pj
+            done
+
+            # Append block commits to COMMIT_HASHES if not already present
+            for bh in "${block[@]}"; do
+                if ! array_contains "$bh" "${COMMIT_HASHES[@]}"; then
+                    COMMIT_HASHES+=("$bh")
+                fi
+            done
         done
+    else
+        # Original single-block behavior: walk backwards from DETECTED_INDEX
+        if [ "$DETECTED_INDEX" -ge 0 ]; then
+            idx=$DETECTED_INDEX
+            while [ $idx -ge 0 ]; do
+                chash=${CANDIDATE_COMMITS[$idx]}
+                subject=$(git log --format=%s -1 "$chash")
+                step=$(extract_step_from_msg "$subject")
+
+                step_norm=$(normalize_step "$step")
+                # If no step or not matching the detected step, stop
+                if [ -z "$step_norm" ] || [ "$step_norm" != "$DETECTED_STEP" ]; then
+                    break
+                fi
+
+                # Prepend to keep chronological order
+                COMMIT_HASHES=("$chash" "${COMMIT_HASHES[@]}")
+
+                # Prepare to check parent (in candidate array)
+                idx=$((idx-1))
+                if [ $idx -lt 0 ]; then
+                    break
+                fi
+
+                parent_chash=${CANDIDATE_COMMITS[$idx]}
+                parent_msg=$(git log --format=%s -1 "$parent_chash")
+
+                # If parent is a query/error update, stop (do not include parent)
+                if echo "$parent_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                    print_info "Stopping at query/error commit: $parent_msg"
+                    break
+                fi
+
+                # If parent is a different AI step, stop
+                if echo "$parent_msg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$parent_msg" | grep -q "ai: \[$DETECTED_STEP\]"; then
+                    print_info "Stopping at different AI step: $parent_msg"
+                    break
+                fi
+            done
+        fi
     fi
 fi
 
@@ -921,4 +993,3 @@ else
     print_info "To recover to the state before rebase: git reset --hard $RECOVERY_TAG"
     exit 1
 fi
-
