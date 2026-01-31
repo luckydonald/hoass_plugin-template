@@ -13,7 +13,6 @@ export default defineConfig([
         },
         rules: {
             "css-no-empty-blocks": "off",
-
         },
     },
 ]);
