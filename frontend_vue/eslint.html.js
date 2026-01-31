@@ -45,6 +45,17 @@ export default defineConfig([
           ],
         },
       ],
+      "@html-eslint/lowercase": "error",
+      "@html-eslint/no-extra-spacing-attrs": "error",
+      "@html-eslint/no-extra-spacing-text": "error",
+      "@html-eslint/no-multiple-empty-lines": "error",
+      "@html-eslint/no-trailing-spaces": "error",
+      "@html-eslint/quotes": [
+        "error",
+        {
+          "enforceTemplatedAttrValue": true,
+        },
+      ],
     },
   },
 ]);
