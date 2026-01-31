@@ -82,6 +82,12 @@ export default [
   {
     ignores: gitignoreEntries,
   },
+  // Local plugin to auto-mark embedded HTML template literals
+  {
+    plugins: { 'local-mark-html': await import('./eslint.local.mark-html.mjs').then(m => m.default ?? m) },
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    rules: { 'local-mark-html/mark-html': 'warn' },
+  },
   // Apply html-eslint recommended config (if available) so embedded HTML in template literals is linted
   ...htmlRecommended,
   // Register html-eslint plugin so HTML inside template literals is linted (only when available)
