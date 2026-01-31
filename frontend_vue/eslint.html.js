@@ -3,12 +3,15 @@ import html from "@html-eslint/eslint-plugin";
 
 export default defineConfig([
     {
-        files: ["**/*.js", "**/*.ts"],
+        files: [
+          "**/*.html",
+          "**/*.js", "*/*.mjs", "*/*.cjs", "**/*.ts",
+        ],
+        extends: ["html/recommended"],
         plugins: {
             html,
         },
-        rules: {
-            "html/require-img-alt": "error",
-        },
+        // When using the recommended rules (or "html/all" for all rules)
+        language: "html/all",
     },
 ]);
