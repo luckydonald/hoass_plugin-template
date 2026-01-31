@@ -22,6 +22,9 @@ export default defineConfig([
       "**/*.cjs",
       "**/*.mjs",
     ],
+    plugins: {
+      html,
+    },
     rules: {
       "@html-eslint/attrs-newline": [
         "error",
