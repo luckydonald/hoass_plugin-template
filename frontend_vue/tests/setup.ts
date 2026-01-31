@@ -17,9 +17,9 @@ global.customElements = {
   define: () => {},
   get: () => undefined,
   whenDefined: async () => Promise.resolve(),
-} as any;
+} as unknown as CustomElementRegistry;
 
 // Mock window.customCards
-(global as any).window = {
+(global as unknown as any).window = {
   customCards: [],
 };
