@@ -16,7 +16,7 @@ export default [
       parser: vueParser,
       parserOptions: {
         parser: tsParser,
-        projectService: true,
+        project: [path.resolve(__dirname, 'tsconfig.eslint.json')],
         tsconfigRootDir: __dirname,
         extraFileExtensions: ['.vue'],
       },
