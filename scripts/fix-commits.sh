@@ -385,7 +385,11 @@ if [ "$INTERACTIVE" = true ]; then
         display_args+=("--number-search" "$ns")
     fi
     if [ -n "$NUMBER_OVERRIDE" ]; then
-        display_args+=("--number-override" "$NUMBER_OVERRIDE")
+        # Normalize and only include the override in the printed command if it differs from the detected step
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        if [ -z "$DETECTED_STEP" ] || [ "$no_norm" != "$DETECTED_STEP" ]; then
+            display_args+=("--number-override" "$no_norm")
+        fi
     fi
     if [ -n "$BATCH_MESSAGE" ]; then
         display_args+=("-m" "$BATCH_MESSAGE")
@@ -1601,13 +1605,13 @@ if git rebase -i "$REBASE_PARENT"; then
         ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
         FINAL_ARGS+=("--number-search" "$ns")
     fi
-    # Prefer explicit override of the step for repeatability
+    # Only include an explicit --number-override if the user provided one and it's different
+    # from the detected step; avoid printing redundant overrides that match detection.
     if [ -n "$NUMBER_OVERRIDE" ]; then
-        FINAL_ARGS+=("--number-override" "$NUMBER_OVERRIDE")
-    elif [ -n "$EDIT_STEP" ]; then
-        FINAL_ARGS+=("--number-override" "$EDIT_STEP")
-    elif [ -n "$DETECTED_STEP" ]; then
-        FINAL_ARGS+=("--number-override" "$DETECTED_STEP")
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        if [ -z "$DETECTED_STEP" ] || [ "$no_norm" != "$DETECTED_STEP" ]; then
+            FINAL_ARGS+=("--number-override" "$no_norm")
+        fi
     fi
     if [ -n "$BATCH_MESSAGE" ]; then
         FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
