@@ -57,6 +57,15 @@ if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" 
     exit 1
 fi
 
+# Print a quick git status summary so user can see if working tree is dirty
+if [ -n "$(git status --porcelain)" ]; then
+    echo -e "${YELLOW}Git working tree has uncommitted changes:${NC}"
+    git --no-pager status --porcelain
+    echo ""
+else
+    echo -e "${GREEN}Git working tree is clean${NC}"
+fi
+
 # Save any currently staged changes
 STASH_STAGED=false
 STAGED_FILES=""
@@ -97,7 +106,7 @@ if git diff --name-only | grep -qE '^uv.lock$' || git ls-files --others --exclud
     echo -e "${GREEN}Committing uv.lock...${NC}"
     git add uv.lock
     # Commit with templating
-    git commit -m "${COMMIT_PREFIX}$(lock_type="frontend" tmpl "${COMMIT_MSG_LOCK}")"
+    git commit -m "${COMMIT_PREFIX}$(lock_type="backend" tmpl "${COMMIT_MSG_LOCK}")"
     echo "  Done"
 else
     echo -e "${YELLOW}No uv.lock changes to commit${NC}"
