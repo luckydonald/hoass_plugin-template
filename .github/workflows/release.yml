@@ -28,7 +28,14 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: yarn install
+        run: |
+          if [ -f yarn.lock ] || [ -f .yarn/lock.yml ]; then
+            echo "Lockfile found, running yarn install --immutable"
+            yarn install --immutable
+          else
+            echo "No lockfile present, running regular yarn install"
+            yarn install
+          fi
 
       - name: Build frontend
         working-directory: frontend
