@@ -149,7 +149,7 @@ DRY_RUN=false
 INTERACTIVE=false
 
 print_usage() {
-    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive]"
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive|-i]"
 }
 
 # Helper: check if array contains value (portable)
@@ -276,7 +276,7 @@ while [ "$#" -gt 0 ]; do
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
         --dry-run)
             DRY_RUN=true; shift;;
-        --interactive)
+        --interactive|-i)
             INTERACTIVE=true; shift;;
         -h|--help)
             print_usage; exit 0;;
