@@ -751,3 +751,4 @@ Why does `make commit-fix -- --interactive` work but `make fix-commits -- --inte
 --dry-run flag is not working (or not displayed correctly) in --interactive mode.
 ———
 The init script seems to crash in the `read -p "Copy new file $rel_path? (y/n) [y]: " COPY_NEW` line.
+Please let it also - before that happens - ask if I would want to move the existing folder to a date-stamped backup folder; `custom_components/your_plugin` -> `custom_components/your_plugin.2025-12-25.bak`, to then copy the new one `plugin_template` in place as `your_plugin` (this after the rename step the previous code, including the merging.
