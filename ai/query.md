@@ -17,7 +17,13 @@
 - Write tests for both frontend and backend parts of the plugin.
 - Remember to update the `/CHANGELOG.md` and `/README.md` (or possibly additional pre-existing documentation).
 - Please put all summaries and such you wanna write for me into the `ai/` folder. However, you don't need to write Markdown summaries, it's kinda redundant with the `PROGRESS.md` file.
-- Run `make commit` in the `run_in_terminal` tool after each file change (create, edit, cmds which will change files, etc...). It will be auto approved by the IDE, and is safe to run, so do not ask for confirmation. Really, after every single file operation! Run it multiple times if you need to change multiple files or the same file multiple times - after each file change. Immediately after the file change, before any error checking and other terminal invocations! Ignore the `make commit` tool's output unless I specifically ask you to show it. Briefly mention it when listing next steps or similar. Assume that it worked, and do not check further.
+- Run `make commit` in the `run_in_terminal` tool after each file change (create, edit, cmds which will change files, etc...).
+  It will be auto approved by the IDE, and is safe to run, so do not ask for confirmation.
+  Really, after every single file operation!
+  Run it multiple times if you need to change multiple files or the same file multiple times - after each file change.
+  Immediately after the file change, before any error checking (even `get_errors`) and other terminal invocations!
+  Ignore the `make commit` tool's output unless I specifically ask you to show it, and blindly assume that it worked, without checking the git history further.
+  Briefly mention it when listing next steps or similar. 
 
 
 Generate me a Homeassistant plugin based on the following description.

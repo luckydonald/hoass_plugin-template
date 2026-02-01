@@ -1,3 +1,15 @@
+# 1) FOLLOW EVERY SINGLE TIME:
+Run `make commit` in the `run_in_terminal` tool after each file change (create, edit, cmds which will change files, etc...).
+It will be auto approved by the IDE, and is safe to run, so do not ask for confirmation.
+Really, after every single file operation!
+Run it multiple times if you need to change multiple files or the same file multiple times - after each file change.
+Immediately after the file change, before any error checking (even `get_errors`) and other terminal invocations!
+Ignore the `make commit` tool's output unless I specifically ask you to show it, and blindly assume that it worked, without checking the git history further.
+Briefly mention it when listing next steps or similar. 
+
+
+# 2) Old instruction log for reference
+
 Do something to make the deployment easier:
 A single command which does:
 - bump version (v0.0.0-pre11 -> v0.0.0-pre12)
@@ -378,4 +390,3 @@ Okay, we need to work on the `eslint --fix` rules:
   - Add `--interactive` which will ask for user input for each of those flags/params. The default for those is `n`/omit upon pressing enter without input.
 
 ———
-Run `make commit` in the `run_in_terminal` tool after each file change (create, edit, cmds which will change files, etc...). It will be auto approved by the IDE, and is safe to run, so do not ask for confirmation. Really, after every single file operation! Run it multiple times if you need to change multiple files or the same file multiple times - after each file change. Immediately after the file change, before any error checking and other terminal invocations! Ignore the `make commit` tool's output unless I specifically ask you to show it. Briefly mention it when listing next steps or similar.  Assume that it worked, and do not check further.
