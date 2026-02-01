@@ -16,14 +16,24 @@ BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
 .PHONY: release lint format build setup setup-py setup-ts setup-backend setup-frontend help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
 
-# If user runs: make commit-fix --start-commit <hash> ...
-# then MAKECMDGOALS contains: commit-fix --start-commit <hash> ...
+# If user runs: make commit-fix --start-commit <hash> ... or make fix-commits --start-commit <hash> ...
+# then MAKECMDGOALS contains: <goal> --start-commit <hash> ...
 # Capture those extra words and expose them as $(EXTRA_ARGS), and
 # create no-op targets for them so make doesn't try to build them.
-ifeq ($(firstword $(MAKECMDGOALS)),commit-fix)
-EXTRA_ARGS := $(filter-out commit-fix,$(MAKECMDGOALS))
-# define no-op targets for each extra arg to avoid 'No rule to make target' errors
-$(eval $(EXTRA_ARGS): ; @:)
+ifeq ($(or $(filter commit-fix,$(MAKECMDGOALS)),$(filter fix-commits,$(MAKECMDGOALS))),)
+EXTRA_ARGS :=
+else
+  # Determine which of the two goals was invoked as first word
+  first_goal=$(firstword $(MAKECMDGOALS))
+  ifeq ($(first_goal),commit-fix)
+    EXTRA_ARGS := $(filter-out commit-fix,$(MAKECMDGOALS))
+  else ifeq ($(first_goal),fix-commits)
+    EXTRA_ARGS := $(filter-out fix-commits,$(MAKECMDGOALS))
+  else
+    EXTRA_ARGS :=
+  endif
+  # define no-op targets for each extra arg to avoid 'No rule to make target' errors
+  $(eval $(EXTRA_ARGS): ; @:)
 endif
 
 # Support named variable style invocation, e.g.:
