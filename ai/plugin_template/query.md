@@ -397,3 +397,4 @@ Okay, we need to work on the `eslint --fix` rules:
   - Add `--interactive` which will ask for user input for each of those flags/params. The default for those is `n`/omit upon pressing enter without input.
   - Make the final "Updated commits:" output strictly limited to the commits we modified (rather than grepping by ai step)
 ———
+Regarding [env.d.ts](../../frontend_vue/src/env.d.ts): Also export those `ha-*`  things from `HTMLElementTagNameMap` (e.g. ha-select) as HASelectElement etc. Probably define them first (there or types.ts, or a file on it's own, what's better), and use them in HTMLElementTagNameMap
