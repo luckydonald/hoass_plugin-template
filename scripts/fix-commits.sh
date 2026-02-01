@@ -147,6 +147,8 @@ NUMBER_SEARCH=()
 NUMBER_OVERRIDE=""
 DRY_RUN=false
 INTERACTIVE=false
+# Default batch message (can be set via --message / -m)
+BATCH_MESSAGE=""
 
 print_usage() {
     echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive|-i]"
@@ -274,6 +276,9 @@ while [ "$#" -gt 0 ]; do
             ;;
         --number-override)
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
+        --message|-m)
+            # Default message for the batch (may be overridden interactively)
+            BATCH_MESSAGE="$2"; shift 2 || true;;
         --dry-run)
             DRY_RUN=true; shift;;
         --interactive|-i)
@@ -845,10 +850,6 @@ linebreak
 
 # Ask for the message once for all commits in this batch
 linebreak
-# If dry-run requested, print a prominent red headline now (the user wanted the dry-run delayed until after the message input)
-#if [ "$DRY_RUN" = true ]; then
-#    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
-#fi
 print_info "Enter a message for all commits in this batch"
 print_warning "Leave empty to keep individual 'running…' messages"
 print_warning "Press Ctrl+C to cancel"
@@ -857,7 +858,19 @@ linebreak
 if [ "$DRY_RUN" = true ]; then
     echo -e "${RED}⚠ DRY RUN: No changes will be made. A simulated rebase will be shown after you enter the message.${NC}"
 fi
-read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
+# If a message was provided via CLI, show it as the current default and allow edit
+if [ -n "$BATCH_MESSAGE" ]; then
+    read -p "Message for step [$PADDED_STEP] (current: $BATCH_MESSAGE) [Enter to keep]: " __input
+    if [ -n "${__input}" ]; then
+        BATCH_MESSAGE="$__input"
+    fi
+else
+    read -p "Message for step [$PADDED_STEP]: " __input
+    if [ -n "${__input}" ]; then
+        BATCH_MESSAGE="$__input"
+    fi
+fi
+unset __input
 linebreak
 
 # If dry-run requested, now show simulated rebase operations and exit before any destructive actions
@@ -1542,7 +1555,51 @@ if git rebase -i "$REBASE_PARENT"; then
         print_info "Delete it manually when no longer needed: "
         print_code "git tag -d $RECOVERY_TAG"
     fi
+    linebreak
 
+    # Print the final reproducible command (always) so the user can repeat it.
+    # This appears before the recovery-tag cleanup prompt so it's visible in logs.
+    FINAL_CMD_PATH="./scripts/fix-commits.sh"
+    FINAL_ARGS=()
+    if [ -n "$START_COMMIT" ]; then
+        FINAL_ARGS+=("--start-commit" "$START_COMMIT")
+    fi
+    if [ -n "$END_COMMIT" ]; then
+        FINAL_ARGS+=("--end-commit" "$END_COMMIT")
+    fi
+    if [ "$IGNORE_BLOCKS" = true ]; then
+        FINAL_ARGS+=("--ignore-blocks")
+    fi
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+        FINAL_ARGS+=("--number-search" "$ns")
+    fi
+    # Prefer explicit override of the step for repeatability
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        FINAL_ARGS+=("--number-override" "$NUMBER_OVERRIDE")
+    elif [ -n "$EDIT_STEP" ]; then
+        FINAL_ARGS+=("--number-override" "$EDIT_STEP")
+    elif [ -n "$DETECTED_STEP" ]; then
+        FINAL_ARGS+=("--number-override" "$DETECTED_STEP")
+    fi
+    if [ -n "$BATCH_MESSAGE" ]; then
+        FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        FINAL_ARGS+=("--dry-run")
+    fi
+
+    FINAL_JOINED=""
+    for a in "${FINAL_ARGS[@]}"; do
+        esc=$(printf "%s" "$a" | sed "s/'/'\\''/g")
+        FINAL_JOINED="$FINAL_JOINED '$esc'"
+    done
+    linebreak
+    print_info "Final command to reproduce this operation:"
+    print_code "$FINAL_CMD_PATH$FINAL_JOINED"
+    print_info "Or via make (positional shortcuts supported):"
+    print_code "make fix-commits --$FINAL_JOINED"
+    linebreak
 else
     # Restore the original core.editor on failure as well
     if [ -n "$ORIGINAL_CORE_EDITOR" ]; then
