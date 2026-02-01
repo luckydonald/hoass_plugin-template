@@ -463,6 +463,11 @@ else
     EDIT_STEP="$DETECTED_STEP"
 fi
 
+# If override provided, ensure detected step is also set to the override so selection logic uses it
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    DETECTED_STEP="$EDIT_STEP"
+fi
+
 # PADDED_STEP used later for tags and prompts
 PADDED_STEP=$(printf "%03d" "${EDIT_STEP:-0}")
 
