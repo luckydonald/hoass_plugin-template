@@ -224,14 +224,12 @@ parse_number_search() {
     # Remove duplicates while preserving order
     if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
         local uniq=()
-        declare -A seen
         for v in "${NUMBER_SEARCH[@]}"; do
             if [ -z "$v" ]; then
                 continue
             fi
-            if [ -z "${seen[$v]}" ]; then
+            if ! array_contains "$v" "${uniq[@]}"; then
                 uniq+=("$v")
-                seen[$v]=1
             fi
         done
         NUMBER_SEARCH=("${uniq[@]}")
@@ -390,90 +388,12 @@ extract_step_from_msg() {
 }
 
 # Helper: normalize step number (remove leading zeros, empty -> empty)
-normalize_step() {
-    echo "$1" | sed 's/^0*//'
-}
+# (defined earlier; keep single definition only)
+# normalize_step() { ... }
 
 # Helper: parse a number/search string like "10,11,58-60" into NUMBER_SEARCH array
-parse_number_search() {
-    local input="$1"
-    NUMBER_SEARCH=()
-    # Empty input -> empty array
-    if [ -z "${input// /}" ]; then
-        return 0
-    fi
-
-    # Split on commas
-    OLD_IFS="$IFS"
-    IFS=','
-    for raw in $input; do
-        IFS="$OLD_IFS"
-        # Trim whitespace
-        token=$(echo "$raw" | sed 's/^ *//; s/ *$//')
-        if [ -z "$token" ]; then
-            IFS=','
-            continue
-        fi
-        # If token is a range like 58-69
-        if echo "$token" | grep -qE '^[0-9]+[[:space:]]*-[[:space:]]*[0-9]+$'; then
-            start=$(echo "$token" | sed -E 's/^([0-9]+).*/\1/')
-            end=$(echo "$token" | sed -E 's/.*-([0-9]+)$/\1/')
-            # Normalize and ensure numeric ordering
-            start=$(normalize_step "$start")
-            end=$(normalize_step "$end")
-            # If start or end empty after normalization, skip
-            if [ -z "$start" ] || [ -z "$end" ]; then
-                IFS=','
-                continue
-            fi
-            # Convert to integers and handle reversed ranges
-            start=$((10#$start))
-            end=$((10#$end))
-            if [ "$start" -le "$end" ]; then
-                i=$start
-                while [ $i -le $end ]; do
-                    NUMBER_SEARCH+=("$i")
-                    i=$((i+1))
-                done
-            else
-                i=$start
-                while [ $i -ge $end ]; do
-                    NUMBER_SEARCH+=("$i")
-                    i=$((i-1))
-                done
-            fi
-        elif echo "$token" | grep -qE '^[0-9]+$'; then
-            # Single number
-            num=$(normalize_step "$token")
-            if [ -n "$num" ]; then
-                # Strip leading zeros via arithmetic
-                num=$((10#$num))
-                NUMBER_SEARCH+=("$num")
-            fi
-        else
-            # Not a number or range; ignore
-            :
-        fi
-        IFS=','
-    done
-    IFS="$OLD_IFS"
-
-    # Remove duplicates while preserving order
-    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
-        local uniq=()
-        declare -A seen
-        for v in "${NUMBER_SEARCH[@]}"; do
-            if [ -z "$v" ]; then
-                continue
-            fi
-            if [ -z "${seen[$v]}" ]; then
-                uniq+=("$v")
-                seen[$v]=1
-            fi
-        done
-        NUMBER_SEARCH=("${uniq[@]}")
-    fi
-}
+# (defined earlier; reuse existing function; no duplicate here)
+# parse_number_search() { ... }
 
 # Helper: check if a step is allowed by NUMBER_SEARCH (if specified)
 is_step_allowed() {
