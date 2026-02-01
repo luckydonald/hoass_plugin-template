@@ -1029,7 +1029,9 @@ fi
 # Create rebase editor script that modifies only our AI commits
 REBASE_EDITOR=$(mktemp)
 SQUASH_MAP=$(mktemp)
-trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT $REBASE_EDITOR $SQUASH_MAP" EXIT
+# create a temp file that will receive the new commit hashes (one per amended commit)
+NEW_COMMIT_LIST_FILE=$(mktemp)
+trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT $REBASE_EDITOR $SQUASH_MAP $NEW_COMMIT_LIST_FILE" EXIT
 
 # Build squash map if needed
 if [ "$DO_SQUASH" = true ]; then
@@ -1093,7 +1095,7 @@ while IFS= read -r line; do
             # Pick or squash
             if [ "$should_squash" = true ]; then
                 # Change pick to squash
-                echo "squash $commit_hash $(git log --format=%s -1 "$commit_hash")" >> "$TEMP_FILE"
+                echo "squash $commit_hash $(git log --format=%s -1 \"$commit_hash\")" >> "$TEMP_FILE"
             else
                 # Keep the pick
                 echo "$line" >> "$TEMP_FILE"
@@ -1101,7 +1103,8 @@ while IFS= read -r line; do
 
             # Add exec to amend with new message (only for non-squashed commits)
             if [ "$should_squash" = false ]; then
-                echo "exec git commit --amend -m \"\$(cat $temp_msg_file)\" && rm -f $temp_msg_file" >> "$TEMP_FILE"
+                # After amending, append the new commit hash to the NEW_COMMIT_LIST_FILE so we can show exact updated commits later
+                echo "exec git commit --amend -m \"\$(cat $temp_msg_file)\" && echo \"\$(git rev-parse --verify HEAD)\" >> \"$NEW_COMMIT_LIST_FILE\" && rm -f $temp_msg_file" >> "$TEMP_FILE"
             else
                 # For squashed commits, just clean up the temp file
                 echo "exec rm -f $temp_msg_file" >> "$TEMP_FILE"
@@ -1127,6 +1130,8 @@ export REBASE_SCRIPT_FILE="$REBASE_SCRIPT"
 export QUERY_ERROR_SCRIPT_FILE="$QUERY_ERROR_SCRIPT"
 export DO_SQUASH_ENV="$DO_SQUASH"
 export SQUASH_MAP_FILE="$SQUASH_MAP"
+# Export the path to the file that will contain the new commit hashes
+export NEW_COMMIT_LIST_FILE="$NEW_COMMIT_LIST_FILE"
 
 print_info "Starting interactive rebase..."
 linebreak
