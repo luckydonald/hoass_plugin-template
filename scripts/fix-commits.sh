@@ -671,7 +671,8 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         for (( j=first_idx-1; j>=0 && count<SEARCH_LIMIT; j-- )); do
             ch=${CANDIDATE_COMMITS[$j]}
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
-            if echo "$subj" | grep -qE "(ai: updated query|ai: updated errors)"; then
+            # Detect query/error commits more broadly (case-insensitive, allow prefixes/emojis)
+            if echo "$subj" | grep -qiE "updated (query|errors)"; then
                 QUERY_ERROR_COMMIT="$ch"
                 found=1
                 break
@@ -685,7 +686,7 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         count=0
         while IFS= read -r ch && [ $count -lt $SEARCH_LIMIT ]; do
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
-            if echo "$subj" | grep -qE "(ai: updated query|ai: updated errors)"; then
+            if echo "$subj" | grep -qiE "updated (query|errors)"; then
                 QUERY_ERROR_COMMIT="$ch"
                 found=1
                 break
@@ -699,12 +700,9 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         print_info "Detected preceding query/error commit:"
         git log --oneline -1 "$QUERY_ERROR_COMMIT"
         echo "Showing diff for the query/error commit (context):"
+        # Prefer showing diffs for known AI files under ai/ and ai/plugin_template/
         git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
-        if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
-            git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
-        else
-            git --no-pager show "$QUERY_ERROR_COMMIT" || true
-        fi
+        git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
         linebreak
     fi
 fi
