@@ -14,7 +14,7 @@ endif
 FRONTEND ?= $(if $(FRONTEND_DIR),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
-.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
+.PHONY: release lint format build setup setup-py setup-ts setup-backend setup-frontend help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
 
 # If user runs: make commit-fix --start-commit <hash> ...
 # then MAKECMDGOALS contains: commit-fix --start-commit <hash> ...
