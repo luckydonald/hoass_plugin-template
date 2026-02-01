@@ -152,6 +152,18 @@ print_usage() {
     echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive]"
 }
 
+# Helper: check if array contains value (portable)
+array_contains() {
+    local val="$1"; shift
+    local item
+    for item in "$@"; do
+        if [ "$item" = "$val" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 # Helper: normalize step number (remove leading zeros, empty -> empty)
 normalize_step() {
     echo "$1" | sed 's/^0*//'
@@ -413,18 +425,6 @@ is_step_allowed() {
         # trim leading zeros from v
         v=$(normalize_step "$v")
         if [ "$v" = "$s" ]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
-# Helper: check if array contains value
-array_contains() {
-    local val="$1"; shift
-    local item
-    for item in "$@"; do
-        if [ "$item" = "$val" ]; then
             return 0
         fi
     done
