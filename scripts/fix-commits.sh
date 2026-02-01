@@ -690,9 +690,11 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
 
     if [ $first_idx -ge 0 ]; then
         count=0
+        CHECKED_CANDIDATE=()
         for (( j=first_idx-1; j>=0 && count<SEARCH_LIMIT; j-- )); do
             ch=${CANDIDATE_COMMITS[$j]}
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            CHECKED_CANDIDATE+=("$ch:$subj")
             # Detect query/error commits more broadly (case-insensitive, allow prefixes/emojis)
             if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
                 QUERY_ERROR_COMMIT="$ch"
@@ -706,8 +708,10 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
     # 2) Fallback: use git rev-list to walk history before first_hash
     if [ -z "$found" ]; then
         count=0
+        CHECKED_REVLIST=()
         while IFS= read -r ch && [ $count -lt $SEARCH_LIMIT ]; do
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            CHECKED_REVLIST+=("$ch:$subj")
             if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
                 QUERY_ERROR_COMMIT="$ch"
                 found=1
@@ -727,6 +731,28 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
         linebreak
     fi
+fi
+
+# If nothing found, print a diagnostic list of the commits we checked (helps debugging why no query/error commit was found)
+if [ -z "$found" ]; then
+    linebreak
+    print_info "No preceding query/error commit found within $SEARCH_LIMIT commits. Commits inspected (newest->oldest):"
+    if [ ${#CHECKED_CANDIDATE[@]} -gt 0 ]; then
+        for entry in "${CHECKED_CANDIDATE[@]}"; do
+            ch=$(echo "$entry" | cut -d: -f1)
+            subj=$(echo "$entry" | cut -d: -f2-)
+            echo "  $ch - $subj"
+        done
+    elif [ ${#CHECKED_REVLIST[@]} -gt 0 ]; then
+        for entry in "${CHECKED_REVLIST[@]}"; do
+            ch=$(echo "$entry" | cut -d: -f1)
+            subj=$(echo "$entry" | cut -d: -f2-)
+            echo "  $ch - $subj"
+        done
+    else
+        print_info "  (no commits inspected — first_hash may be unreachable)"
+    fi
+    linebreak
 fi
 
 # Show the commits we will fix
