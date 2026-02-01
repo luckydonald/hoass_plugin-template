@@ -747,3 +747,5 @@ The query/error diff is in `make fix-commit` is no longer shown/found. I assume 
 Also, it no longer checks for dirty git state before starting the script...
 ———
 Why does `make commit-fix -- --interactive` work but `make fix-commits -- --interactive` does not start interactively?
+———
+--dry-run flag is not working (or not displayed correctly) in --interactive mode.
