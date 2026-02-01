@@ -408,7 +408,38 @@ if [ "$INTERACTIVE" = true ]; then
 
     linebreak
     print_info "Calculated command based on your interactive choices:"
-    print_code "$cmd_path$joined"
+    # Build a shell-friendly invocation for direct script running but omit non-ASCII messages
+    SHELL_JOINED=""
+    skip_next=false
+    i=0
+    while [ $i -lt ${#display_args[@]} ]; do
+        a="${display_args[$i]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            i=$((i+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${display_args[$((i+1))]}"
+            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
+            if [ -n "$nonascii" ]; then
+                # replace with placeholder indicating omission
+                SHELL_JOINED="$SHELL_JOINED -m '<omitted-unicode-message>'"
+                skip_next=true
+            else
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_JOINED="$SHELL_JOINED $esc $vesc"
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_JOINED="$SHELL_JOINED $esc"
+        fi
+        i=$((i+1))
+    done
+
+    print_code "$cmd_path$SHELL_JOINED"
     # Build a Make-friendly invocation but omit any -m <msg> that contains non-ASCII
     MAKE_JOINED=""
     skip_next=false
@@ -1669,7 +1700,37 @@ if git rebase -i "$REBASE_PARENT"; then
     done
     linebreak
     print_info "Final command to reproduce this operation:"
-    print_code "$FINAL_CMD_PATH$FINAL_JOINED"
+    # Build a shell-friendly final invocation similarly and omit/placeholder non-ASCII message
+    SHELL_FINAL_JOINED=""
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
+            if [ -n "$nonascii" ]; then
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED -m '<omitted-unicode-message>'"
+                skip_next=true
+            else
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_code "$FINAL_CMD_PATH$SHELL_FINAL_JOINED"
     # Build Make-friendly final joined similarly (omit -m if non-ASCII)
     MAKE_FINAL_JOINED=""
     omitted_message=false
