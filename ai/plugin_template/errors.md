@@ -759,3 +759,7 @@ error This project's package.json defines "packageManager": "yarn@4.12.0". Howev
 Presence of the "packageManager" field indicates that the project is meant to be used with Corepack, a tool included by default with all official Node.js distributions starting from 16.9 and 14.19.
 Corepack must currently be enabled by running corepack enable in your terminal. For more information, check out https://yarnpkg.com/corepack.
 Error: Process completed with exit code 1.
+
+- Use the yarn version from the `package.json`'s `.packageManager` (currently line 58).
+  - I want you to enable the **current** yarn version as specified in `frontend(_vue)/package.json` at the time of running! No hardcoded version in the workflow files!
+- Also make sure the `make setup-ts` step does the corepack thing too.
