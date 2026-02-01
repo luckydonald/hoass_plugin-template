@@ -681,6 +681,29 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
             fi
             linebreak
         fi
+    else
+        # Fallback: first_hash may not be present in CANDIDATE_COMMITS (e.g. custom range). Check parent commit(s) of first_hash directly.
+        parent_hashes=$(git log --format=%P -1 "$first_hash" 2>/dev/null || true)
+        # take the last parent (immediate previous commit in linear history) if present
+        if [ -n "$parent_hashes" ]; then
+            # choose the last parent (handles merges by picking the most-likely linear parent)
+            possible_query_hash=$(echo "$parent_hashes" | awk '{print $NF}')
+            possible_query_msg=$(git log --format=%s -1 "$possible_query_hash" 2>/dev/null || true)
+            if echo "$possible_query_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                QUERY_ERROR_COMMIT="$possible_query_hash"
+                linebreak
+                print_info "Detected preceding query/error commit (via parent lookup):"
+                git log --oneline -1 "$QUERY_ERROR_COMMIT"
+                echo "Showing diff for the query/error commit (context):"
+                git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+                if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
+                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                else
+                    git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                fi
+                linebreak
+            fi
+        fi
     fi
 fi
 
