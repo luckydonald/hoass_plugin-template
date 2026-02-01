@@ -456,24 +456,18 @@ if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ] && [ ${#NUMBER_SEAR
     exit 1
 fi
 
-# Determine the step we will use when editing messages (override only affects editing)
-if [ -n "$NUMBER_OVERRIDE" ]; then
-    EDIT_STEP=$(normalize_step "$NUMBER_OVERRIDE")
-else
-    EDIT_STEP="$DETECTED_STEP"
+# Decide selection mode: allow auto-inclusion when non-interactive and a DETECTED_STEP exists
+# EFFECTIVE_IGNORE_BLOCKS will be used instead of raw IGNORE_BLOCKS during selection
+EFFECTIVE_IGNORE_BLOCKS="$IGNORE_BLOCKS"
+# If user didn't pass --number-search and script is non-interactive and we detected a step,
+# include all commits with that detected step (so non-interactive runs act across history)
+if [ "$EFFECTIVE_IGNORE_BLOCKS" = false ] && [ ${#NUMBER_SEARCH[@]} -eq 0 ] && [ -n "$DETECTED_STEP" ] && [ "$INTERACTIVE" = false ]; then
+    EFFECTIVE_IGNORE_BLOCKS=true
 fi
-
-# If override provided, ensure detected step is also set to the override so selection logic uses it
-if [ -n "$NUMBER_OVERRIDE" ]; then
-    DETECTED_STEP="$EDIT_STEP"
-fi
-
-# PADDED_STEP used later for tags and prompts
-PADDED_STEP=$(printf "%03d" "${EDIT_STEP:-0}")
 
 # Build the list of commits to operate on
 COMMIT_HASHES=()
-if [ "$IGNORE_BLOCKS" = true ]; then
+if [ "$EFFECTIVE_IGNORE_BLOCKS" = true ]; then
     # Include all commits in the candidate range that match NUMBER_SEARCH (if provided),
     # otherwise match DETECTED_STEP (the most recent matching step).
     for chash in "${CANDIDATE_COMMITS[@]}"; do
