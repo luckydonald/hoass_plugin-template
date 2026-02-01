@@ -611,6 +611,23 @@ fi
 
 COMMIT_COUNT=${#COMMIT_HASHES[@]}
 
+# Re-order COMMIT_HASHES to be chronological (oldest -> newest) using CANDIDATE_COMMITS ordering
+if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
+    ORDERED_COMMITS=()
+    for ch in "${CANDIDATE_COMMITS[@]}"; do
+        for target in "${COMMIT_HASHES[@]}"; do
+            if [ "$ch" = "$target" ]; then
+                ORDERED_COMMITS+=("$ch")
+                break
+            fi
+        done
+    done
+    # Replace COMMIT_HASHES with ordered list
+    COMMIT_HASHES=("${ORDERED_COMMITS[@]}")
+fi
+
+COMMIT_COUNT=${#COMMIT_HASHES[@]}
+
 if [ "$COMMIT_COUNT" -eq 0 ]; then
     print_error "No commits found matching the specified criteria"
     exit 1
