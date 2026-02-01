@@ -648,6 +648,42 @@ fi
 
 print_success "Found $COMMIT_COUNT commit(s) matching criteria"
 
+# Detect if there's a following query/error commit immediately after our batch in the candidate list
+# This commit should be included in MODIFY_SET and its diff should be shown before prompting for message
+QUERY_ERROR_COMMIT=""
+if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
+    last_hash=${COMMIT_HASHES[${#COMMIT_HASHES[@]}-1]}
+    # find last_hash index in CANDIDATE_COMMITS
+    last_idx=-1
+    for i in "${!CANDIDATE_COMMITS[@]}"; do
+        if [ "${CANDIDATE_COMMITS[$i]}" = "$last_hash" ]; then
+            last_idx=$i
+            break
+        fi
+    done
+    next_idx=$((last_idx + 1))
+    if [ $last_idx -ge 0 ] && [ $next_idx -lt ${#CANDIDATE_COMMITS[@]} ]; then
+        possible_query_hash=${CANDIDATE_COMMITS[$next_idx]}
+        possible_query_msg=$(git log --format=%s -1 "$possible_query_hash" 2>/dev/null || true)
+        if echo "$possible_query_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+            QUERY_ERROR_COMMIT="$possible_query_hash"
+            linebreak
+            print_info "Detected following query/error commit:"
+            git log --oneline -1 "$QUERY_ERROR_COMMIT"
+            echo "Showing diff for the query/error commit (context):"
+            # Show the commit contents; prefer showing ai/query.md or ai/errors.md if present
+            git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+            # Show the actual diff for ai files if touched
+            if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
+                git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+            else
+                git --no-pager show "$QUERY_ERROR_COMMIT" || true
+            fi
+            linebreak
+        fi
+    fi
+fi
+
 # Show the commits we will fix
 linebreak
 print_info "Commits to fix:"
