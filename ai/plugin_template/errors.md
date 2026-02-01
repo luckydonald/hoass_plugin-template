@@ -742,3 +742,6 @@ error This project's package.json defines "packageManager": "yarn@4.12.0". Howev
 ———
 Why is `make setup-frontend` using `npm` instead of `yarn`?
 Also fix it to be named `setup-ts` and the backend `-py` like the other options.
+———
+The query/error diff is in `make commit` is no longer shown/found. I assume because of the changes for multiple batches?
+Also, it no longer checks for dirty git state before starting the script...
