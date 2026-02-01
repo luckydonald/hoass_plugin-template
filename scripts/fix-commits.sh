@@ -648,12 +648,16 @@ fi
 
 print_success "Found $COMMIT_COUNT commit(s) matching criteria"
 
-# Detect if there's a preceding query/error commit immediately before our batch in the candidate list
-# If present, show its diff (this is commonly the ai/errors or ai/query commit that summarizes the batch)
+# Detect if there's a preceding query/error commit before our batch and show its diff
+# Strategy: 1) If first_hash is inside CANDIDATE_COMMITS, scan backwards up to N commits in that list.
+#           2) Fallback: use git rev-list to examine up to N parent commits before first_hash.
 QUERY_ERROR_COMMIT=""
+SEARCH_LIMIT=20
 if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
     first_hash=${COMMIT_HASHES[0]}
-    # find first_hash index in CANDIDATE_COMMITS
+    found=""
+
+    # 1) If present in CANDIDATE_COMMITS, search there first (backwards)
     first_idx=-1
     for i in "${!CANDIDATE_COMMITS[@]}"; do
         if [ "${CANDIDATE_COMMITS[$i]}" = "$first_hash" ]; then
@@ -661,49 +665,47 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
             break
         fi
     done
-    prev_idx=$((first_idx - 1))
-    if [ $first_idx -ge 0 ] && [ $prev_idx -ge 0 ]; then
-        possible_query_hash=${CANDIDATE_COMMITS[$prev_idx]}
-        possible_query_msg=$(git log --format=%s -1 "$possible_query_hash" 2>/dev/null || true)
-        if echo "$possible_query_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
-            QUERY_ERROR_COMMIT="$possible_query_hash"
-            linebreak
-            print_info "Detected preceding query/error commit:"
-            git log --oneline -1 "$QUERY_ERROR_COMMIT"
-            echo "Showing diff for the query/error commit (context):"
-            # Show the commit contents; prefer showing ai/query.md or ai/errors.md if present
-            git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
-            # Show the actual diff for ai files if touched
-            if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
-                git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
-            else
-                git --no-pager show "$QUERY_ERROR_COMMIT" || true
+
+    if [ $first_idx -ge 0 ]; then
+        count=0
+        for (( j=first_idx-1; j>=0 && count<SEARCH_LIMIT; j-- )); do
+            ch=${CANDIDATE_COMMITS[$j]}
+            subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            if echo "$subj" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                QUERY_ERROR_COMMIT="$ch"
+                found=1
+                break
             fi
-            linebreak
-        fi
-    else
-        # Fallback: first_hash may not be present in CANDIDATE_COMMITS (e.g. custom range). Check parent commit(s) of first_hash directly.
-        parent_hashes=$(git log --format=%P -1 "$first_hash" 2>/dev/null || true)
-        # take the last parent (immediate previous commit in linear history) if present
-        if [ -n "$parent_hashes" ]; then
-            # choose the last parent (handles merges by picking the most-likely linear parent)
-            possible_query_hash=$(echo "$parent_hashes" | awk '{print $NF}')
-            possible_query_msg=$(git log --format=%s -1 "$possible_query_hash" 2>/dev/null || true)
-            if echo "$possible_query_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
-                QUERY_ERROR_COMMIT="$possible_query_hash"
-                linebreak
-                print_info "Detected preceding query/error commit (via parent lookup):"
-                git log --oneline -1 "$QUERY_ERROR_COMMIT"
-                echo "Showing diff for the query/error commit (context):"
-                git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
-                if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
-                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
-                else
-                    git --no-pager show "$QUERY_ERROR_COMMIT" || true
-                fi
-                linebreak
+            count=$((count+1))
+        done
+    fi
+
+    # 2) Fallback: use git rev-list to walk history before first_hash
+    if [ -z "$found" ]; then
+        count=0
+        while IFS= read -r ch && [ $count -lt $SEARCH_LIMIT ]; do
+            subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            if echo "$subj" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                QUERY_ERROR_COMMIT="$ch"
+                found=1
+                break
             fi
+            count=$((count+1))
+        done < <(git rev-list --max-count=$SEARCH_LIMIT "$first_hash^" 2>/dev/null || true)
+    fi
+
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        linebreak
+        print_info "Detected preceding query/error commit:"
+        git log --oneline -1 "$QUERY_ERROR_COMMIT"
+        echo "Showing diff for the query/error commit (context):"
+        git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+        if git show --name-only --pretty="" "$QUERY_ERROR_COMMIT" | grep -q "^ai/"; then
+            git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+        else
+            git --no-pager show "$QUERY_ERROR_COMMIT" || true
         fi
+        linebreak
     fi
 fi
 
