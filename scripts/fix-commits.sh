@@ -456,6 +456,25 @@ if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ] && [ ${#NUMBER_SEAR
     exit 1
 fi
 
+# Determine the step we will use when editing messages (override only affects editing)
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    EDIT_STEP=$(normalize_step "$NUMBER_OVERRIDE")
+else
+    EDIT_STEP="$DETECTED_STEP"
+fi
+
+# If override provided, ensure detected step is also set to the override so selection logic uses it
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    DETECTED_STEP="$EDIT_STEP"
+fi
+
+# PADDED_STEP used later for prompts and tags; leave empty if no EDIT_STEP
+if [ -n "$EDIT_STEP" ]; then
+    PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
+else
+    PADDED_STEP=""
+fi
+
 # Decide selection mode: allow auto-inclusion when non-interactive and a DETECTED_STEP exists
 # EFFECTIVE_IGNORE_BLOCKS will be used instead of raw IGNORE_BLOCKS during selection
 EFFECTIVE_IGNORE_BLOCKS="$IGNORE_BLOCKS"
