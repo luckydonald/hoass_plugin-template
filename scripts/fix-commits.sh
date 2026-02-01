@@ -893,7 +893,13 @@ trap "rm -f $REBASE_SCRIPT" EXIT
 cat > "$REBASE_SCRIPT" << 'EOFSCRIPT'
 #!/usr/bin/env bash
 # Extract step and substep
-STEP=$(echo "$1" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+# If an override step is provided via EDIT_STEP_ENV, prefer it
+if [ -n "$EDIT_STEP_ENV" ]; then
+    STEP="$EDIT_STEP_ENV"
+else
+    STEP=$(echo "$1" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+fi
+STEP=$(echo "$STEP" | sed 's/^0*//')
 SUBSTEP=$(echo "$1" | sed 's/.*(\([0-9]*\)\/.*/\1/')
 TOTAL="TOTAL_PLACEHOLDER"
 
@@ -1070,7 +1076,8 @@ while IFS= read -r line; do
             else
                 # Regular AI commit - use the regular script
                 # Pass the current substep for renumbering
-                echo "exec BATCH_MSG_ENV=\"\$BATCH_MSG_ENV\" SUBSTEP_OVERRIDE=$current_substep $REBASE_SCRIPT_FILE '$commit_msg' > $temp_msg_file" >> "$TEMP_FILE"
+                # Also pass EDIT_STEP_ENV so the called script can use the override
+                echo "exec BATCH_MSG_ENV=\"\$BATCH_MSG_ENV\" SUBSTEP_OVERRIDE=$current_substep EDIT_STEP_ENV=\"\$EDIT_STEP_ENV\" $REBASE_SCRIPT_FILE '$commit_msg' > $temp_msg_file" >> "$TEMP_FILE"
 
                 # Only increment substep if not squashing this commit
                 if [ "$should_squash" = false ]; then
@@ -1139,6 +1146,9 @@ linebreak
 
 # Export the batch message as an environment variable (preserves all special characters)
 export BATCH_MSG_ENV="$BATCH_MESSAGE"
+
+# Export edit-step override for the rebase script (if any)
+export EDIT_STEP_ENV="$EDIT_STEP"
 
 # Create a custom git editor for handling squash commit messages
 GIT_EDITOR_WRAPPER="$SCRIPT_DIR/fix-commits-editor-wrapper.sh"
