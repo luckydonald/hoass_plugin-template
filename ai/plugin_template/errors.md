@@ -752,3 +752,10 @@ Why does `make commit-fix -- --interactive` work but `make fix-commits -- --inte
 ———
 The init script seems to crash in the `read -p "Copy new file $rel_path? (y/n) [y]: " COPY_NEW` line.
 Please let it also - before that happens - ask if I would want to move the existing folder to a date-stamped backup folder; `custom_components/your_plugin` -> `custom_components/your_plugin.2025-12-25.bak`, to then copy the new one `plugin_template` in place as `your_plugin` (this after the rename step the previous code, including the merging.
+———
+`.github/workflows/release.yml` and `…/ci.yml`:
+error This project's package.json defines "packageManager": "yarn@4.12.0". However the current global version of Yarn is 1.22.22.
+
+Presence of the "packageManager" field indicates that the project is meant to be used with Corepack, a tool included by default with all official Node.js distributions starting from 16.9 and 14.19.
+Corepack must currently be enabled by running corepack enable in your terminal. For more information, check out https://yarnpkg.com/corepack.
+Error: Process completed with exit code 1.
