@@ -541,11 +541,16 @@ if [ -n "$NUMBER_OVERRIDE" ]; then
     DETECTED_STEP="$EDIT_STEP"
 fi
 
-# PADDED_STEP used later for prompts and tags; leave empty if no EDIT_STEP
+# PADDED_STEP used later for prompts and tags; leave empty if no EDIT_STEP or if EDIT_STEP is not a pure number
+PADDED_STEP=""
 if [ -n "$EDIT_STEP" ]; then
-    PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
-else
-    PADDED_STEP=""
+    # Only attempt numeric formatting if EDIT_STEP is an integer (digits only)
+    if echo "$EDIT_STEP" | grep -qE '^[0-9]+$'; then
+        PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
+    else
+        # EDIT_STEP may contain user-supplied text (guard against malformed inputs)
+        PADDED_STEP=""
+    fi
 fi
 
 # Decide selection mode: allow auto-inclusion when non-interactive and a DETECTED_STEP exists
