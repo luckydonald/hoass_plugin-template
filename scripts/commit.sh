@@ -30,10 +30,8 @@ COMMIT_MSG_LOCK="🔏 Updated package versions for {lock_type}."
 
 # Detect if we're in the template repository
 REPO_DIR=$(basename "$(cd "$SCRIPT_DIR/.." && pwd)")
-IS_TEMPLATE_REPO=false
 COMMIT_PREFIX=""
 if echo "$REPO_DIR" | grep -qE "^hoass_(plugin[-_])?template"; then
-    IS_TEMPLATE_REPO=true
     COMMIT_PREFIX="${COMMIT_PREFIX_TEMPLATE}"
     echo -e "${YELLOW}Template repository detected - using TEMPLATE prefix${NC}"
 fi
