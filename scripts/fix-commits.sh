@@ -521,7 +521,13 @@ else
                 st_norm=$(normalize_step "$st")
 
                 # Stop if step differs
-                if [ -z "$st_norm" ] || [ "$st_norm" != "$step_norm" ]; then
+                # If this commit has no step, stop
+                if [ -z "$st_norm" ]; then
+                    break
+                fi
+
+                # If the step is not one of the allowed NUMBER_SEARCH values, stop
+                if ! is_step_allowed "$st_norm"; then
                     break
                 fi
 
@@ -536,12 +542,18 @@ else
                 pch=${CANDIDATE_COMMITS[$pj]}
                 pmsg=$(git log --format=%s -1 "$pch")
 
-                # Stop if parent is query/error or a different ai step
+                # Stop if parent is query/error
                 if echo "$pmsg" | grep -qE "(ai: updated query|ai: updated errors)"; then
                     break
                 fi
-                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$pmsg" | grep -q "ai: \[$step_norm\]"; then
-                    break
+
+                # If parent has an AI step, only continue if that parent's step is allowed by NUMBER_SEARCH
+                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]"; then
+                    parent_step=$(extract_step_from_msg "$pmsg")
+                    parent_step_norm=$(normalize_step "$parent_step")
+                    if ! is_step_allowed "$parent_step_norm"; then
+                        break
+                    fi
                 fi
 
                 j=$pj
