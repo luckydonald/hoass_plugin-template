@@ -279,6 +279,21 @@ while [ "$#" -gt 0 ]; do
         --message|-m)
             # Default message for the batch (may be overridden interactively)
             BATCH_MESSAGE="$2"; shift 2 || true;;
+        --message-base64|--message-b64)
+            # Accept message as base64 to avoid shell/Make quoting issues; decode using python3 to preserve UTF-8
+            if [ -n "$2" ]; then
+                b64="$2"; shift 2 || true
+                # decode safely via python3
+                BATCH_MESSAGE=$(python3 - <<PY
+import sys,base64
+sys.stdout.write(base64.b64decode('$b64').decode('utf-8'))
+PY
+) || BATCH_MESSAGE=""
+            else
+                print_error "--message-base64 requires a base64 value"
+                exit 1
+            fi
+            ;;
         --dry-run)
             DRY_RUN=true; shift;;
         --interactive|-i)
