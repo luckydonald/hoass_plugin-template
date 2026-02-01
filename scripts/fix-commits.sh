@@ -395,11 +395,11 @@ if [ "$INTERACTIVE" = true ]; then
     fi
 
     # Join with safe single-quoting for display
+    # Use printf %q to produce a bash-escaped representation per argument (safe to eval)
     joined=""
     for a in "${display_args[@]}"; do
-        # escape single quotes in argument
-        esc=$(printf "%s" "$a" | sed "s/'/'\\''/g")
-        joined="$joined '$esc'"
+        esc=$(printf "%q" "$a")
+        joined="$joined $esc"
     done
 
     linebreak
@@ -1594,8 +1594,8 @@ if git rebase -i "$REBASE_PARENT"; then
 
     FINAL_JOINED=""
     for a in "${FINAL_ARGS[@]}"; do
-        esc=$(printf "%s" "$a" | sed "s/'/'\\''/g")
-        FINAL_JOINED="$FINAL_JOINED '$esc'"
+        esc=$(printf "%q" "$a")
+        FINAL_JOINED="$FINAL_JOINED $esc"
     done
     linebreak
     print_info "Final command to reproduce this operation:"
