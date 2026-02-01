@@ -397,6 +397,8 @@ Okay, we need to work on the `eslint --fix` rules:
   - Delay the dry run until after the message input (which will be headlined with a red dry run reminder), so that the messages can be properly calculated, and the real rebase operations are displayed.
   - Add `--interactive` which will ask for user input for each of those flags/params. The default for those is `n`/omit upon pressing enter without input.
     - After the `--interactive` mode prompts, display a calculated command for the user input.
+  - Add a `--message` / `-m` parameter to have a default message.
+    - Before the _"Checking for old recovery tags to clean up..."_ message, print the "final" command as well (regardless of interactive mode), including the detected number and the typed message, to give the user a way to repeat it.
   - Make the final "Updated commits:" output strictly limited to the commits we modified (rather than grepping by ai step)
   - `make fix-commits -- --number-search 81` shall also be possible via 
     - `make fix-commits -- 81`
