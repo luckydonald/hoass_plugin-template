@@ -228,7 +228,14 @@ parse_number_search() {
             if [ -z "$v" ]; then
                 continue
             fi
-            if ! array_contains "$v" "${uniq[@]}"; then
+            found=false
+            for u in "${uniq[@]}"; do
+                if [ "$u" = "$v" ]; then
+                    found=true
+                    break
+                fi
+            done
+            if [ "$found" = false ]; then
                 uniq+=("$v")
             fi
         done
