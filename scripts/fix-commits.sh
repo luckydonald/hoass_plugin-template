@@ -556,7 +556,29 @@ else
                 pmsg=$(git log --format=%s -1 "$pch")
 
                 # Stop if parent is query/error
-                if echo "$pmsg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                # If this commit has no step, stop
+                if [ -z "$st_norm" ]; then
+                    break
+                fi
+
+                # If the step is not one of the allowed NUMBER_SEARCH values, stop
+                if ! is_step_allowed "$st_norm"; then
+                    break
+                fi
+
+                # Prepend to block (so block will be chronological)
+                block=("$ch" "${block[@]}")
+
+                # Check parent commit message (previous in candidate list)
+                pj=$((j-1))
+                if [ $pj -lt 0 ]; then
+                    break
+                fi
+                pch=${CANDIDATE_COMMITS[$pj]}
+                pmsg=$(git log --format=%s -1 "$pch")
+
+                # Stop if parent is query/error (match broader variants: ai: ... query/error or 'updated query/errors')
+                if echo "$pmsg" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
                     break
                 fi
 
@@ -672,7 +694,7 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
             ch=${CANDIDATE_COMMITS[$j]}
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
             # Detect query/error commits more broadly (case-insensitive, allow prefixes/emojis)
-            if echo "$subj" | grep -qiE "updated (query|errors)"; then
+            if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
                 QUERY_ERROR_COMMIT="$ch"
                 found=1
                 break
@@ -686,7 +708,7 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         count=0
         while IFS= read -r ch && [ $count -lt $SEARCH_LIMIT ]; do
             subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
-            if echo "$subj" | grep -qiE "updated (query|errors)"; then
+            if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
                 QUERY_ERROR_COMMIT="$ch"
                 found=1
                 break
