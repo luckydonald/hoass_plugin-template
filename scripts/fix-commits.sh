@@ -375,7 +375,7 @@ parse_number_search() {
     # Remove duplicates while preserving order
     if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
         local uniq=()
-        local seen
+        declare -A seen
         for v in "${NUMBER_SEARCH[@]}"; do
             if [ -z "$v" ]; then
                 continue
