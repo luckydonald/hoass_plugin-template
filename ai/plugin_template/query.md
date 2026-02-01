@@ -382,7 +382,7 @@ Okay, we need to work on the `eslint --fix` rules:
   - For the fix commit script which renames the commits, add a startup parameter `--start-commit <commit>` which will only consider commits after that commit (including that commit).
   - Add a `--end-commit <commit>` which will only consider commits up to that commit (including that commit).
   - Also add `--ignore-blocks` where it will consider commits separated by other commit messages, and also renames those, if they match the criteria.
-  - And add a `--number-search` which will search for the step number in the commit message, and only consider those with the same step number as the valid commit, ignoring other step numbers, but per default still adhereing to blocks. This can be a list `10, 11, 23`.
+  - And add a `--number-search` which will search for the step number in the commit message, and only consider those with the same step number as the valid commit, ignoring other step numbers, but per default still adhering to blocks. This can be a list `10, 11, 23`. Allow to enter ranges like `55, 58-69`, too.
   - Finally `--number-override <number>` which will use that number when editing the commit messages, instead of the detected one.
   - Have the Makefile append the arguments when `make commit-fix`.
   - Add `--dry-run`.
