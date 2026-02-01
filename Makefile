@@ -104,49 +104,9 @@ init:
 	@./scripts/init.sh
 
 fix-commits:
-	@chmod +x scripts/fix-commits.sh
-	@bash -lc '\
-set -euo pipefail; \
-args=("$$@"); \
-out=(); \
-i=0; n=$${#args[@]}; \
-while [ $$i -lt $$n ]; do \
-  a="$${args[$$i]}"; \
-  case "$$a" in \
-    --) \
-      # -- <num>  -> --number-search <num> when next token is numeric
-      next="$${args[$$(($$i+1))]:-}"; \
-      if printf "%s" "$$next" | grep -Eq '^[0-9]+$$'; then \
-        out+=("--number-search" "$$next"); $$i=$$(($$i+2)); \
-      else \
-        out+=("$$a"); $$i=$$(($$i+1)); \
-      fi; \
-      ;;
-    -n|--number|-N) \
-      # short flag -n <num> or --number <num>
-      next="$${args[$$(($$i+1))]:-}"; \
-      if printf "%s" "$$next" | grep -Eq '^[0-9]+$$'; then \
-        out+=("--number-search" "$$next"); $$i=$$(($$i+2)); \
-      else \
-        out+=("$$a"); $$i=$$(($$i+1)); \
-      fi; \
-      ;;
-    --number-search) \
-      # pass-through with its parameter if present
-      next="$${args[$$(($$i+1))]:-}"; \
-      if [ -n "$$next" ]; then out+=("$$a" "$$next"); $$i=$$(($$i+2)); else out+=("$$a"); $$i=$$(($$i+1)); fi; \
-      ;;
-    *) \
-      # bare numeric token -> treat as --number-search
-      if printf "%s" "$$a" | grep -Eq '^[0-9]+$$'; then \
-        out+=("--number-search" "$$a"); $$i=$$(($$i+1)); \
-      else \
-        out+=("$$a"); $$i=$$(($$i+1)); \
-      fi; \
-      ;;
-  esac; \
-done; \
-exec ./scripts/fix-commits.sh "${out[@]}"' -- $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
+	@chmod +x scripts/fix-commits-wrapper.sh || true
+	@chmod +x scripts/fix-commits.sh || true
+	@./scripts/fix-commits-wrapper.sh $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
 
 commit-fix: fix-commits
 
