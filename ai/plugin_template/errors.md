@@ -763,3 +763,10 @@ Error: Process completed with exit code 1.
 - Use the yarn version from the `package.json`'s `.packageManager` (currently line 58).
   - I want you to enable the **current** yarn version as specified in `frontend(_vue)/package.json` at the time of running! No hardcoded version in the workflow files!
 - Also make sure the `make setup-ts` step does the corepack thing too.
+———
+The install in the pipeline fails ("Install dependencies"):
+Run yarn install
+➤ YN0000: · Yarn 4.12.0
+➤ YN0028: · The lockfile would have been created by this install, which is explicitly forbidden.
+➤ YN0000: · Failed with errors in 0s 15ms
+Error: Process completed with exit code 1.
