@@ -731,6 +731,45 @@ if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
         git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
         linebreak
     fi
+    # Fallback: if we couldn't find a commit by message, check whether any of the inspected commits modified ai/ files
+    if [ -z "$QUERY_ERROR_COMMIT" ]; then
+        # Check candidate list we inspected first
+        if [ ${#CHECKED_CANDIDATE[@]} -gt 0 ]; then
+            for entry in "${CHECKED_CANDIDATE[@]}"; do
+                ch=$(echo "$entry" | cut -d: -f1)
+                # list files changed in commit and look for ai/ paths
+                if git show --name-only --pretty="" "$ch" 2>/dev/null | grep -qE "^ai/|^ai/plugin_template/"; then
+                    QUERY_ERROR_COMMIT="$ch"
+                    linebreak
+                    print_info "Detected preceding query/error commit by file changes:"
+                    git log --oneline -1 "$QUERY_ERROR_COMMIT"
+                    echo "Showing diff for the query/error commit (context):"
+                    git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                    linebreak
+                    break
+                fi
+            done
+        fi
+
+        # If still not found, check the rev-list entries we inspected
+        if [ -z "$QUERY_ERROR_COMMIT" ] && [ ${#CHECKED_REVLIST[@]} -gt 0 ]; then
+            for entry in "${CHECKED_REVLIST[@]}"; do
+                ch=$(echo "$entry" | cut -d: -f1)
+                if git show --name-only --pretty="" "$ch" 2>/dev/null | grep -qE "^ai/|^ai/plugin_template/"; then
+                    QUERY_ERROR_COMMIT="$ch"
+                    linebreak
+                    print_info "Detected preceding query/error commit by file changes:"
+                    git log --oneline -1 "$QUERY_ERROR_COMMIT"
+                    echo "Showing diff for the query/error commit (context):"
+                    git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                    linebreak
+                    break
+                fi
+            done
+        fi
+    fi
 fi
 
 # If nothing found, print a diagnostic list of the commits we checked (helps debugging why no query/error commit was found)
