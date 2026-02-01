@@ -409,8 +409,50 @@ if [ "$INTERACTIVE" = true ]; then
     linebreak
     print_info "Calculated command based on your interactive choices:"
     print_code "$cmd_path$joined"
+    # Build a Make-friendly invocation but omit any -m <msg> that contains non-ASCII
+    MAKE_JOINED=""
+    skip_next=false
+    omitted_message=false
+    i=0
+    while [ $i -lt ${#display_args[@]} ]; do
+        a="${display_args[$i]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            i=$((i+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            # lookahead to value
+            val="${display_args[$((i+1))]}"
+            # Detect non-ASCII bytes in val by removing ASCII bytes and checking remainder
+            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
+            if [ -n "$nonascii" ]; then
+                # omit message from Make invocation and mark omitted so we can show python runner
+                omitted_message=true
+                skip_next=true
+            else
+                # safe to include
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_JOINED="$MAKE_JOINED $esc $vesc"
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_JOINED="$MAKE_JOINED $esc"
+        fi
+        i=$((i+1))
+    done
+
     print_info "Equivalent make invocation (wrapper supports positional shortcut forms):"
-    print_code "make fix-commits --$joined"
+    if [ -n "$MAKE_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown below to run exactly."
+    fi
     # Also print a Unicode-safe python runner that decodes base64 arguments and invokes the script.
     # This avoids problems with non-ASCII characters (e.g. ellipsis) and exotic quoting.
     py_b64_args=()
@@ -1628,8 +1670,46 @@ if git rebase -i "$REBASE_PARENT"; then
     linebreak
     print_info "Final command to reproduce this operation:"
     print_code "$FINAL_CMD_PATH$FINAL_JOINED"
+    # Build Make-friendly final joined similarly (omit -m if non-ASCII)
+    MAKE_FINAL_JOINED=""
+    omitted_message=false
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
+            if [ -n "$nonascii" ]; then
+                omitted_message=true
+                skip_next=true
+            else
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
     print_info "Or via make (positional shortcuts supported):"
-    print_code "make fix-commits --$FINAL_JOINED"
+    if [ -n "$MAKE_FINAL_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_FINAL_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown above to run exactly."
+    fi
     linebreak
 else
     # Restore the original core.editor on failure as well
