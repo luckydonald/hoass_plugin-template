@@ -58,12 +58,20 @@ if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" 
 fi
 
 # Print a quick git status summary so user can see if working tree is dirty
-if [ -n "$(git status --porcelain)" ]; then
+PORCELAIN_OUTPUT=$(git status --porcelain)
+if [ -n "${PORCELAIN_OUTPUT}" ]; then
     echo -e "${YELLOW}Git working tree has uncommitted changes:${NC}"
-    git --no-pager status --porcelain
+    echo "${PORCELAIN_OUTPUT}"
     echo ""
 else
     echo -e "${GREEN}Git working tree is clean${NC}"
+fi
+
+# If there are no unstaged changes and no staged changes, nothing to do -> exit
+STAGED_OUTPUT=$(git diff --cached --name-only)
+if [ -z "${PORCELAIN_OUTPUT}" ] && [ -z "${STAGED_OUTPUT}" ]; then
+    echo -e "${YELLOW}No changes detected (working tree and index clean) — nothing to commit.${NC}"
+    exit 0
 fi
 
 # Save any currently staged changes
