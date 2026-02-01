@@ -23,22 +23,8 @@ jobs:
 
       - name: Enable Corepack and activate Yarn 4.12.0
         run: |
-          corepack enable || true
-          # Prefer packageManager defined in frontend/package.json or frontend_vue/package.json
-          PM=""
-          if [ -f frontend/package.json ]; then
-            PM=$(node -e "console.log(require('./frontend/package.json').packageManager || '')") || true
-          elif [ -f frontend_vue/package.json ]; then
-            PM=$(node -e "console.log(require('./frontend_vue/package.json').packageManager || '')") || true
-          fi
-          if [ -n "$PM" ]; then
-            echo "Activating package manager: $PM"
-            corepack prepare "$PM" --activate || true
-          else
-            echo "No packageManager found in frontend package.json; skipping corepack prepare"
-          fi
-          # Print yarn version for diagnostics (may be from corepack)
-          yarn -v || true
+          chmod +x ./scripts/ensure_yarn.sh || true
+          ./scripts/ensure_yarn.sh
 
       - name: Install dependencies
         working-directory: frontend
