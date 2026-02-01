@@ -361,6 +361,47 @@ if [ "$INTERACTIVE" = true ]; then
     linebreak
 fi
 
+# If interactive mode was used, display the calculated command the script will run
+if [ "$INTERACTIVE" = true ]; then
+    # Build argument list for display
+    cmd_path="./scripts/fix-commits.sh"
+    display_args=()
+    if [ -n "$START_COMMIT" ]; then
+        display_args+=("--start-commit" "$START_COMMIT")
+    fi
+    if [ -n "$END_COMMIT" ]; then
+        display_args+=("--end-commit" "$END_COMMIT")
+    fi
+    if [ "$IGNORE_BLOCKS" = true ]; then
+        display_args+=("--ignore-blocks")
+    fi
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+        display_args+=("--number-search" "$ns")
+    fi
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        display_args+=("--number-override" "$NUMBER_OVERRIDE")
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        display_args+=("--dry-run")
+    fi
+
+    # Join with safe single-quoting for display
+    joined=""
+    for a in "${display_args[@]}"; do
+        # escape single quotes in argument
+        esc=$(printf "%s" "$a" | sed "s/'/'\\''/g")
+        joined="$joined '$esc'"
+    done
+
+    linebreak
+    print_info "Calculated command based on your interactive choices:"
+    print_code "$cmd_path$joined"
+    print_info "Equivalent make invocation (wrapper supports positional shortcut forms):"
+    print_code "make fix-commits --$joined"
+    linebreak
+fi
+
 # Validate commits if provided
 if [ -n "$START_COMMIT" ]; then
     if ! git cat-file -e "${START_COMMIT}^{commit}" 2>/dev/null; then
