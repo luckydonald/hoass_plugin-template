@@ -1188,15 +1188,42 @@ if git rebase -i "$REBASE_PARENT"; then
     else
         EXPECTED_COUNT=$COMMIT_COUNT
     fi
-    # shellcheck disable=SC2207
-    commits_after=($(
-      git log --oneline --pretty=format:"%H" --grep="ai: \[$PADDED_STEP\]" --reverse \
-      | head -n "$EXPECTED_COUNT"
-    ))
+    # Prefer using the exact new commit hashes produced during the rebase (if available)
+    commits_after=()
+    if [ -n "$NEW_COMMIT_LIST_FILE" ] && [ -f "$NEW_COMMIT_LIST_FILE" ] && [ -s "$NEW_COMMIT_LIST_FILE" ]; then
+        # Read hashes in order and remove duplicates while preserving order
+        while IFS= read -r h; do
+            [ -z "$h" ] && continue
+            skip=false
+            for ex in "${commits_after[@]}"; do
+                if [ "$ex" = "$h" ]; then
+                    skip=true
+                    break
+                fi
+            done
+            if [ "$skip" = false ]; then
+                commits_after+=("$h")
+            fi
+        done < "$NEW_COMMIT_LIST_FILE"
+        # If EXPECTED_COUNT set, trim to that many
+        if [ "$EXPECTED_COUNT" -ne 0 ]; then
+            if [ ${#commits_after[@]} -gt $EXPECTED_COUNT ]; then
+                # Keep first EXPECTED_COUNT entries
+                commits_after=("${commits_after[@]:0:$EXPECTED_COUNT}")
+            fi
+        fi
+    else
+        # Fallback to the previous grep approach (best-effort)
+        # shellcheck disable=SC2207
+        commits_after=($(
+          git log --oneline --pretty=format:"%H" --grep="ai: \[$PADDED_STEP\]" --reverse \
+          | head -n "$EXPECTED_COUNT"
+        ))
+    fi
 
-    # Loop over each hash
+    # Loop over each hash and print a one-line summary
     for commit_hash in "${commits_after[@]}"; do
-      git log --oneline -1 $commit_hash
+      git log --oneline -1 "$commit_hash"
     done
     linebreak
     print_success "All done! Commits have been fixed."
