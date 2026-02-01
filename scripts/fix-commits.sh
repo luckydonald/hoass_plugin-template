@@ -282,11 +282,11 @@ while [ "$#" -gt 0 ]; do
         --message-base64|--message-b64)
             # Accept message as base64 to avoid shell/Make quoting issues; decode using python3 to preserve UTF-8
             if [ -n "$2" ]; then
-                b64="$2"; shift 2 || true
-                # decode safely via python3
+                MESSAGE_B64="$2"; shift 2 || true
+                # decode safely via python3 into BATCH_MESSAGE
                 BATCH_MESSAGE=$(python3 - <<PY
 import sys,base64
-sys.stdout.write(base64.b64decode('$b64').decode('utf-8'))
+sys.stdout.write(base64.b64decode('$MESSAGE_B64').decode('utf-8'))
 PY
 ) || BATCH_MESSAGE=""
             else
@@ -407,7 +407,12 @@ if [ "$INTERACTIVE" = true ]; then
         fi
     fi
     if [ -n "$BATCH_MESSAGE" ]; then
-        display_args+=("-m" "$BATCH_MESSAGE")
+        # If user provided an original base64, prefer including that in displayed make command
+        if [ -n "$MESSAGE_B64" ]; then
+            display_args+=("--message-base64" "$MESSAGE_B64")
+        else
+            display_args+=("-m" "$BATCH_MESSAGE")
+        fi
     fi
     if [ "$DRY_RUN" = true ]; then
         display_args+=("--dry-run")
@@ -1702,7 +1707,11 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
     fi
     if [ -n "$BATCH_MESSAGE" ]; then
-        FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+        if [ -n "$MESSAGE_B64" ]; then
+            FINAL_ARGS+=("--message-base64" "$MESSAGE_B64")
+        else
+            FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+        fi
     fi
     if [ "$DRY_RUN" = true ]; then
         FINAL_ARGS+=("--dry-run")
