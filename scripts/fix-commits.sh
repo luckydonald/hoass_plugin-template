@@ -407,8 +407,32 @@ if [ "$INTERACTIVE" = true ]; then
     print_code "$cmd_path$joined"
     print_info "Equivalent make invocation (wrapper supports positional shortcut forms):"
     print_code "make fix-commits --$joined"
+    # Also print a Unicode-safe python runner that decodes base64 arguments and invokes the script.
+    # This avoids problems with non-ASCII characters (e.g. ellipsis) and exotic quoting.
+    py_b64_args=()
+    for a in "${display_args[@]}"; do
+        # base64-encode each argument (no newlines)
+        b64=$(printf "%s" "$a" | base64 | tr -d '\n') || b64=""
+        py_b64_args+=("$b64")
+    done
+    if [ ${#py_b64_args[@]} -gt 0 ]; then
+        linebreak
+        print_info "Safe (Unicode) reproducible command using python3:"
+        # Build a small heredoc that decodes and runs the script; print without executing
+        printf "»%s %s\n" "" "python3 - <<'PY'" >/dev/null 2>&1 || true
+        # Construct printed heredoc content
+        PY_CONTENT="import base64,subprocess\nargs=["
+        for b in "${py_b64_args[@]}"; do
+            PY_CONTENT+="base64.b64decode('$b').decode('utf-8'),"
+        done
+        PY_CONTENT+="]\nsubprocess.run(['./scripts/fix-commits.sh']+args)\n"
+        # Use print_code to show the heredoc (preserve newlines)
+        # Surround with PY markers as printed to the user
+        print_code "python3 - <<'PY'\n${PY_CONTENT}PY"
+        linebreak
+    fi
     linebreak
-fi
+ fi
 
 # Validate commits if provided
 if [ -n "$START_COMMIT" ]; then
