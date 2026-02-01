@@ -507,6 +507,14 @@ if [ "$DRY_RUN" = true ]; then
     echo "🧾 Simulated rebase todo (from $REBASE_PARENT..HEAD):"
     echo
     substep_counter=1
+
+    # Compute simulated TOTAL (account for squashes)
+    if [ "$DO_SQUASH" = true ]; then
+        SIM_TOTAL=$((COMMIT_COUNT - ${#SQUASH_COMMITS[@]}))
+    else
+        SIM_TOTAL=$COMMIT_COUNT
+    fi
+
     for th in "${TODO_COMMITS[@]}"; do
         subj=$(git log --format='%s' -1 "$th" 2>/dev/null || true)
         # Determine if this commit will be squashed
@@ -555,10 +563,15 @@ if [ "$DRY_RUN" = true ]; then
                             new_body="running…"
                         fi
                     fi
+                    # Compute SUB and TOTAL for display
+                    SUB_DISPLAY=$substep_counter
+                    TOTAL_DISPLAY=$SIM_TOTAL
                     # If this commit will be amended (i.e. will_modify true), show the amended message
-                    echo "    ✏️ will amend message -> ✉️ \"✨ ai: [$padded_step] $new_body (SUB/$TOTAL)\""
-                    # Note: SUB and TOTAL are placeholders here in the simulation; actual SUB depends on renumbering during squash
-                    substep_counter=$((substep_counter + 1))
+                    echo "    ✏️ will amend message -> ✉️ \"✨ ai: [$padded_step] $new_body ($SUB_DISPLAY/$TOTAL_DISPLAY)\""
+                    # Only increment substep if this commit results in a separate amended commit
+                    if [ "$should_squash" = false ]; then
+                        substep_counter=$((substep_counter + 1))
+                    fi
                 else
                     # Non-AI commit modified (e.g., query/error) will be appended with BATCH_MESSAGE
                     if [ -n "$BATCH_MESSAGE" ]; then
