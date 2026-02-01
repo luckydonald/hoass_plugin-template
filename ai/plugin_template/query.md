@@ -7,6 +7,7 @@ Immediately after the file change, before any error checking (even `get_errors`)
 Ignore the `make commit` tool's output unless I specifically ask you to show it, and blindly assume that it worked, without checking the git history further.
 Briefly mention it when listing next steps or similar. 
 
+Please prefer to use the `read_file` tool over `cat` etc. and `grep_search` tool instead of using the terminal there too.
 
 # 2) Old instruction log for reference
 
