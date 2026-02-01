@@ -1,16 +1,26 @@
-# ...existing code...
-       - name: Enable Corepack and activate Yarn 4.12.0
--        run:
--          corepack enable
--          corepack prepare yarn@4.12.0 --activate
--          yarn -v
-+        run: |
-+          chmod +x ./scripts/ensure_yarn.sh || true
-+          ./scripts/ensure_yarn.sh
+name: Ensure Yarn 4
 
-       - name: Install dependencies (immutable)
-         run: yarn install --immutable
-         env:
-           CI: true
+on: [pull_request]
 
-# ...existing code...
+jobs:
+  check-yarn-4:
+    runs-on: ubuntu-latest
+    name: Check Yarn 4 availability
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Enable Corepack and activate Yarn (from package.json)
+        run: |
+          chmod +x ./scripts/ensure_yarn.sh || true
+          ./scripts/ensure_yarn.sh
+
+      - name: Install dependencies (immutable)
+        run: yarn install --immutable
+        env:
+          CI: true
