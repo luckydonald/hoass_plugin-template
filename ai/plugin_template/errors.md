@@ -745,3 +745,5 @@ Also fix it to be named `setup-ts` and the backend `-py` like the other options.
 ———
 The query/error diff is in `make commit` is no longer shown/found. I assume because of the changes for multiple batches?
 Also, it no longer checks for dirty git state before starting the script...
+———
+Why does `make commit-fix -- --interactive` work but `make fix-commits -- --interactive` does not start interactively?
