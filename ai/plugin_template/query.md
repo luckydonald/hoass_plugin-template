@@ -375,6 +375,7 @@ Okay, we need to work on the `eslint --fix` rules:
   - Have the Makefile append the arguments when `make commit-fix`.
   - Add `--dry-run`.
   - Delay the dry run until after the message input (which will be headlined with a red dry run reminder), so that the messages can be properly calculated, and the real rebase operations are displayed.
+  - Add `--interactive` which will ask for user input for each of those flags/params. The default for those is `n`/omit upon pressing enter without input.
 
 ———
 Run `make commit` after each file change (create, edit, cmds which will change files, etc...). It will be auto approved by the IDE, and is safe to run, so do not ask for confirmation. Really, after every single file operation! Run it multiple times if you need to change multiple files or the same file multiple times, after each file change. Immediately after the file change, before any error checking and such. Do not mention that in chat though, just do it silently.
