@@ -125,9 +125,16 @@ setup-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
 	@if [ -n "$(FRONTEND_DIR)" ]; then \
-		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
-			if command -v yarn >/dev/null 2>&1; then yarn install; elif command -v npm >/dev/null 2>&1; then npm install; else echo "No npm/yarn found"; fi; \
-		fi; \
+			cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+				# Enable Corepack and activate package manager defined in package.json if present
+				corepack enable || true; \
+				PM=$$(node -e "console.log(require('./package.json').packageManager || '')") || true; \
+				if [ -n "$$PM" ]; then \
+					echo "Preparing $$PM"; corepack prepare "$$PM" --activate || true; \
+				fi; \
+				# Prefer yarn when available (corepack may have been activated), fallback to npm
+				if command -v yarn >/dev/null 2>&1; then yarn install; elif command -v npm >/dev/null 2>&1; then npm install; else echo "No npm/yarn found"; fi; \
+			fi; \
 	fi
 else
 	@echo "No frontend sources detected – skipping frontend setup."
