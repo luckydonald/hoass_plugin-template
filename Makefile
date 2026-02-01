@@ -33,10 +33,7 @@ else
     EXTRA_ARGS :=
   endif
   # define no-op targets for each extra arg to avoid 'No rule to make target' errors
-  # Deduplicate and normalize the EXTRA_ARGS list before creating targets to avoid
-  # "target given more than once" when the same token appears multiple times.
-  EXTRA_ARGS_UNIQ := $(sort $(filter-out ,$(EXTRA_ARGS)))
-  $(eval $(EXTRA_ARGS_UNIQ): ; @:)
+  $(eval $(EXTRA_ARGS): ; @:)
 endif
 
 # Support named variable style invocation, e.g.:
