@@ -146,9 +146,10 @@ IGNORE_BLOCKS=false
 NUMBER_SEARCH=()
 NUMBER_OVERRIDE=""
 DRY_RUN=false
+INTERACTIVE=false
 
 print_usage() {
-    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run]"
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive]"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -172,6 +173,8 @@ while [ "$#" -gt 0 ]; do
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
         --dry-run)
             DRY_RUN=true; shift;;
+        --interactive)
+            INTERACTIVE=true; shift;;
         -h|--help)
             print_usage; exit 0;;
         *)
@@ -179,6 +182,81 @@ while [ "$#" -gt 0 ]; do
             break;;
     esac
 done
+
+# If interactive mode is enabled, prompt the user for each configurable flag/param
+if [ "$INTERACTIVE" = true ]; then
+    linebreak
+    print_info "Interactive mode: press Enter to keep defaults/omit a setting"
+
+    # Start commit
+    if [ -n "$START_COMMIT" ]; then
+        read -p "Start commit (current: $START_COMMIT) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            START_COMMIT="$__input"
+        fi
+    else
+        read -p "Start commit [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            START_COMMIT="$__input"
+        fi
+    fi
+
+    # End commit
+    if [ -n "$END_COMMIT" ]; then
+        read -p "End commit (current: $END_COMMIT) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            END_COMMIT="$__input"
+        fi
+    else
+        read -p "End commit [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            END_COMMIT="$__input"
+        fi
+    fi
+
+    # Ignore blocks (y/N)
+    read -p "Ignore blocks (treat matching commits even if separated)? [y/N]: " __yn
+    if [[ "${__yn}" =~ ^[Yy] ]]; then
+        IGNORE_BLOCKS=true
+    fi
+
+    # Number search (comma-separated)
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        curns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+        read -p "Number search (current: $curns) [comma-separated, Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            IFS=',' read -r -a NUMBER_SEARCH <<< "$__input"
+        fi
+    else
+        read -p "Number search (comma-separated) [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            IFS=',' read -r -a NUMBER_SEARCH <<< "$__input"
+        fi
+    fi
+
+    # Number override
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        read -p "Number override (current: $NUMBER_OVERRIDE) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            NUMBER_OVERRIDE="$__input"
+        fi
+    else
+        read -p "Number override [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            NUMBER_OVERRIDE="$__input"
+        fi
+    fi
+
+    # Dry-run (y/N)
+    read -p "Dry run (no changes will be made)? [y/N]: " __yn
+    if [[ "${__yn}" =~ ^[Yy] ]]; then
+        DRY_RUN=true
+    fi
+
+    # cleanup temp variable
+    unset __input __yn curns
+    linebreak
+fi
 
 # Validate commits if provided
 if [ -n "$START_COMMIT" ]; then
