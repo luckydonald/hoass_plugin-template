@@ -388,5 +388,5 @@ Okay, we need to work on the `eslint --fix` rules:
   - Add `--dry-run`.
   - Delay the dry run until after the message input (which will be headlined with a red dry run reminder), so that the messages can be properly calculated, and the real rebase operations are displayed.
   - Add `--interactive` which will ask for user input for each of those flags/params. The default for those is `n`/omit upon pressing enter without input.
-
+  - Make the final "Updated commits:" output strictly limited to the commits we modified (rather than grepping by ai step)
 ———
