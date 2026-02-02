@@ -257,6 +257,30 @@ parse_number_search() {
     fi
 }
 
+# Helper: check if a string is pure ASCII (returns 1 for ascii, 0 for non-ascii)
+is_ascii() {
+    # Use python3 for reliable unicode detection; print 1 if ascii else 0
+    python3 - <<PY "$1"
+import sys
+try:
+    s = sys.argv[1]
+    print(1 if s.isascii() else 0)
+except Exception:
+    print(0)
+PY
+}
+
+# Helper: base64-encode a UTF-8 string (no newline)
+b64_of() {
+    python3 - <<PY "$1"
+import sys,base64
+try:
+    print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
+except Exception:
+    print('')
+PY
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --start-commit)
@@ -428,7 +452,7 @@ if [ "$INTERACTIVE" = true ]; then
 
     linebreak
     print_info "Calculated command based on your interactive choices:"
-    # Build a shell-friendly invocation for direct script running but omit non-ASCII messages
+    # Build a shell-friendly invocation for direct script running and convert non-ASCII messages
     SHELL_JOINED=""
     skip_next=false
     i=0
@@ -441,17 +465,17 @@ if [ "$INTERACTIVE" = true ]; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${display_args[$((i+1))]}"
-            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
-            if [ -n "$nonascii" ]; then
-                # replace with placeholder indicating omission
-                SHELL_JOINED="$SHELL_JOINED -m '<omitted-unicode-message>'"
-                skip_next=true
-            else
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_JOINED="$SHELL_JOINED $esc $vesc"
-                skip_next=true
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_JOINED="$SHELL_JOINED $esc $vesc"
             fi
+            skip_next=true
         else
             esc=$(printf "%q" "$a")
             SHELL_JOINED="$SHELL_JOINED $esc"
@@ -491,11 +515,7 @@ PY
                 skip_next=true
             else
                 # include base64-safe message flag
-                b64=$(python3 - <<PY
-import sys,base64
-print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
-PY
- "$val")
+                b64=$(b64_of "$val")
                 esc=$(printf "%q" "--message-base64")
                 vesc=$(printf "%q" "$b64")
                 MAKE_JOINED="$MAKE_JOINED $esc $vesc"
@@ -1738,7 +1758,7 @@ if git rebase -i "$REBASE_PARENT"; then
     done
     linebreak
     print_info "Final command to reproduce this operation:"
-    # Build a shell-friendly final invocation similarly and omit/placeholder non-ASCII message
+    # Build a shell-friendly final invocation similarly and convert non-ASCII messages to base64 flags
     SHELL_FINAL_JOINED=""
     skip_next=false
     j=0
@@ -1751,31 +1771,18 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            is_ascii=$(python3 - <<PY
-s = '''%s'''
-try:
-    print(s.isascii())
-except Exception:
-    print(False)
-PY
-            )
-            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
-                skip_next=true
             else
-                b64=$(python3 - <<PY
-import sys,base64
-print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
-PY
- "$val")
+                b64=$(b64_of "$val")
                 esc=$(printf "%q" "--message-base64")
                 vesc=$(printf "%q" "$b64")
                 SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
                 omitted_message=true
-                skip_next=true
             fi
+            skip_next=true
         else
             esc=$(printf "%q" "$a")
             SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc"
@@ -1798,25 +1805,13 @@ PY
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            is_ascii=$(python3 - <<PY
-s = '''%s'''
-try:
-    print(s.isascii())
-except Exception:
-    print(False)
-PY
-            )
-            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
                 skip_next=true
             else
-                b64=$(python3 - <<PY
-import sys,base64
-print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
-PY
- "$val")
+                b64=$(b64_of "$val")
                 esc=$(printf "%q" "--message-base64")
                 vesc=$(printf "%q" "$b64")
                 MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
