@@ -1487,16 +1487,24 @@ CURRENT_MSG="$1"
 if [ -z "$BATCH_MSG_ENV" ]; then
     FULL_MSG="$CURRENT_MSG"
 else
-    # If the current message already contains a colon, replace everything after the last colon
-    # with the new batch message (strip leading spaces after colon). Otherwise append ": <msg>".
-    if echo "$CURRENT_MSG" | grep -q ":"; then
-        # Replace after last colon: split into head (up to last colon) and tail
-        head_part=$(echo "$CURRENT_MSG" | sed 's/\(.*\):.*/\1/')
-        # Trim trailing spaces in head_part
+    # If the message contains the known marker 'ai: updated query:' or 'ai: updated errors:'
+    # replace everything after that marker with the new batch message. This avoids
+    # repeated appends when the script is run multiple times.
+    if echo "$CURRENT_MSG" | grep -qiE "ai:[[:space:]]*updated[[:space:]]\+\(query\|errors\):"; then
+        # Extract up to and including the marker (preserve casing and any prefix)
+        head_part=$(echo "$CURRENT_MSG" | sed -n 's/\(.*ai:[[:space:]]*updated[[:space:]]\+\(query\|errors\):\).*/\1/p')
+        # Trim trailing whitespace from head_part
         head_part=$(echo "$head_part" | sed 's/[[:space:]]*$//')
-        FULL_MSG="${head_part}: ${BATCH_MSG_ENV}"
+        FULL_MSG="${head_part} ${BATCH_MSG_ENV}"
     else
-        FULL_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+        # Fallback: if there's any ':' present, replace after the last colon as before
+        if echo "$CURRENT_MSG" | grep -q ":"; then
+            head_part=$(echo "$CURRENT_MSG" | sed 's/\(.*\):.*/\1/')
+            head_part=$(echo "$head_part" | sed 's/[[:space:]]*$//')
+            FULL_MSG="${head_part}: ${BATCH_MSG_ENV}"
+        else
+            FULL_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+        fi
     fi
 fi
 
