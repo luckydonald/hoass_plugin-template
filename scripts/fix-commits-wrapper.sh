@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# If the script was invoked under /bin/sh (or another non-bash shell), re-exec under bash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec env bash "$0" "$@"
+fi
 set -euo pipefail
 
 # Normalize common shorthand invocations to the canonical --number-search <n>
