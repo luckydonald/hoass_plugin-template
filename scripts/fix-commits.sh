@@ -1715,15 +1715,38 @@ if git rebase -i "$REBASE_PARENT"; then
     if [ "$IGNORE_BLOCKS" = true ]; then
         FINAL_ARGS+=("--ignore-blocks")
     fi
+
+    # Compute effective number-search string (ns): prefer explicit NUMBER_SEARCH, else DETECTED_STEP
+    ns=""
     if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
         ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+    elif [ -n "$DETECTED_STEP" ]; then
+        ns="$DETECTED_STEP"
+    fi
+
+    # If we have an effective ns, always include it in the final reproducible args
+    if [ -n "$ns" ]; then
         FINAL_ARGS+=("--number-search" "$ns")
     fi
+
     # Only include an explicit --number-override if the user provided one and it's different
-    # from the detected step; avoid printing redundant overrides that match detection.
+    # from the effective ns (and the effective ns is non-empty). This avoids redundant
+    # --number-override when it would be identical to the --number-search used above.
     if [ -n "$NUMBER_OVERRIDE" ]; then
         no_norm=$(normalize_step "$NUMBER_OVERRIDE")
-        if [ -z "$DETECTED_STEP" ] || [ "$no_norm" != "$DETECTED_STEP" ]; then
+        include_override=true
+        if [ -n "$ns" ]; then
+            # If ns contains multiple values (comma), treat override as different.
+            if echo "$ns" | grep -q ','; then
+                include_override=true
+            else
+                ns_norm=$(normalize_step "$ns")
+                if [ "$no_norm" = "$ns_norm" ]; then
+                    include_override=false
+                fi
+            fi
+        fi
+        if [ "$include_override" = true ]; then
             FINAL_ARGS+=("--number-override" "$no_norm")
         fi
     fi
