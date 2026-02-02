@@ -69,4 +69,5 @@ done
 
 # Exec the real script (must be in scripts/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "$SCRIPT_DIR/fix-commits.sh" "${out[@]}"
+# Use "${out[@]:-}" to avoid unbound variable errors under 'set -u' when out is empty
+exec "$SCRIPT_DIR/fix-commits.sh" "${out[@]:-}"
