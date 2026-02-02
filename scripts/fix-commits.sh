@@ -1751,10 +1751,12 @@ if git rebase -i "$REBASE_PARENT"; then
         FINAL_ARGS+=("--dry-run")
     fi
 
-    FINAL_JOINED=""
+    # joined is intentionally not constructed using printf %q to avoid $'...' escapes for non-ASCII
+    # Use SHELL_JOINED (constructed below) as the canonical, ASCII-safe printed invocation
+    joined=""
     for a in "${FINAL_ARGS[@]}"; do
         esc=$(printf "%q" "$a")
-        FINAL_JOINED="$FINAL_JOINED $esc"
+        joined="$joined $esc"
     done
     linebreak
     print_info "Final command to reproduce this operation:"
