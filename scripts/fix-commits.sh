@@ -422,6 +422,12 @@ if [ "$INTERACTIVE" = true ]; then
     if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
         ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
         display_args+=("--number-search" "$ns")
+    else
+        # If the user didn't provide an explicit number search, include the detected step
+        # so printed commands are reproducible and show the effective selection.
+        if [ -n "$DETECTED_STEP" ]; then
+            display_args+=("--number-search" "$DETECTED_STEP")
+        fi
     fi
     if [ -n "$NUMBER_OVERRIDE" ]; then
         # Normalize and only include the override in the printed command if it differs from the detected step
@@ -1718,6 +1724,12 @@ if git rebase -i "$REBASE_PARENT"; then
     if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
         ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
         FINAL_ARGS+=("--number-search" "$ns")
+    else
+        # If no explicit number search was provided, include the detected step so the
+        # final reproducible command shows what was actually used.
+        if [ -n "$DETECTED_STEP" ]; then
+            FINAL_ARGS+=("--number-search" "$DETECTED_STEP")
+        fi
     fi
     # Only include an explicit --number-override if the user provided one and it's different
     # from the detected step; avoid printing redundant overrides that match detection.
