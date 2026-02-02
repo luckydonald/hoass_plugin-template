@@ -1148,9 +1148,138 @@ if [ "$DRY_RUN" = true ]; then
         fi
     done
     echo
+    # Also print the final reproducible command (dry-run should show same summary as real run)
+    FINAL_CMD_PATH="./scripts/fix-commits.sh"
+    FINAL_ARGS=()
+    if [ -n "$START_COMMIT" ]; then
+        FINAL_ARGS+=("--start-commit" "$START_COMMIT")
+    fi
+    if [ -n "$END_COMMIT" ]; then
+        FINAL_ARGS+=("--end-commit" "$END_COMMIT")
+    fi
+    if [ "$IGNORE_BLOCKS" = true ]; then
+        FINAL_ARGS+=("--ignore-blocks")
+    fi
+    # effective ns
+    ns=""
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+    elif [ -n "$DETECTED_STEP" ]; then
+        ns="$DETECTED_STEP"
+    fi
+    if [ -n "$ns" ]; then
+        FINAL_ARGS+=("--number-search" "$ns")
+    fi
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        include_override=true
+        if [ -n "$ns" ]; then
+            if echo "$ns" | grep -q ','; then
+                include_override=true
+            else
+                ns_norm=$(normalize_step "$ns")
+                if [ "$no_norm" = "$ns_norm" ]; then
+                    include_override=false
+                fi
+            fi
+        fi
+        if [ "$include_override" = true ]; then
+            FINAL_ARGS+=("--number-override" "$no_norm")
+        fi
+    fi
+    if [ -n "$BATCH_MESSAGE" ]; then
+        if [ -n "$MESSAGE_B64" ]; then
+            FINAL_ARGS+=("--message-base64" "$MESSAGE_B64")
+        else
+            FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+        fi
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        FINAL_ARGS+=("--dry-run")
+    fi
+
+    # Build and print shell-friendly and make-friendly invocations
+    SHELL_FINAL_JOINED=""
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+            fi
+            skip_next=true
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_info "Final command to reproduce this operation (dry-run):"
+    print_code "$FINAL_CMD_PATH$SHELL_FINAL_JOINED"
+
+    MAKE_FINAL_JOINED=""
+    omitted_message=false
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_info "Or via make (positional shortcuts supported):"
+    if [ -n "$MAKE_FINAL_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_FINAL_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown above to run exactly."
+    fi
+
+    echo
     echo "⚠ This is a dry-run simulation; no tags or rebase operations were performed."
     exit 0
-fi
+ fi
 
 # Analyze commits for potential squashing
 print_info "Analyzing commits for potential squashing..."
