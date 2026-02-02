@@ -405,6 +405,8 @@ Okay, we need to work on the `eslint --fix` rules:
     - `make fix-commits -- -n 81`
     - `make fix-commits 81`
     - (`make commit-fix`)
+  - Repeated edits with `make fix-commits` should not repeatedly append to error/query.md. Instead replace the previous message (after the `:` colon).
+  - Make the dry run actually also show that command summary.
 
 ———
 Regarding [env.d.ts](../../frontend_vue/src/env.d.ts): Also export those `ha-*`  things from `HTMLElementTagNameMap` (e.g. ha-select) as HASelectElement etc. Probably define them first (there or types.ts, or a file on it's own, what's better), and use them in HTMLElementTagNameMap
