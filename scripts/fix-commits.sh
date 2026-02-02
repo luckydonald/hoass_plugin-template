@@ -475,17 +475,31 @@ if [ "$INTERACTIVE" = true ]; then
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             # lookahead to value
             val="${display_args[$((i+1))]}"
-            # Detect non-ASCII bytes in val by removing ASCII bytes and checking remainder
-            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
-            if [ -n "$nonascii" ]; then
-                # omit message from Make invocation and mark omitted so we can show python runner
-                omitted_message=true
-                skip_next=true
-            else
-                # safe to include
+            # Use python to check ascii-ness robustly
+            is_ascii=$(python3 - <<PY
+s = '''%s'''
+try:
+    print(s.isascii())
+except Exception:
+    print(False)
+PY
+            )
+            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_JOINED="$MAKE_JOINED $esc $vesc"
+                skip_next=true
+            else
+                # include base64-safe message flag
+                b64=$(python3 - <<PY
+import sys,base64
+print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
+PY
+ "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_JOINED="$MAKE_JOINED $esc $vesc"
+                omitted_message=true
                 skip_next=true
             fi
         else
@@ -1737,14 +1751,29 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
-            if [ -n "$nonascii" ]; then
-                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED -m '<omitted-unicode-message>'"
-                skip_next=true
-            else
+            is_ascii=$(python3 - <<PY
+s = '''%s'''
+try:
+    print(s.isascii())
+except Exception:
+    print(False)
+PY
+            )
+            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            else
+                b64=$(python3 - <<PY
+import sys,base64
+print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
+PY
+ "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                omitted_message=true
                 skip_next=true
             fi
         else
@@ -1769,14 +1798,29 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            nonascii=$(printf "%s" "$val" | LC_ALL=C tr -d '\0-\177' || true)
-            if [ -n "$nonascii" ]; then
-                omitted_message=true
-                skip_next=true
-            else
+            is_ascii=$(python3 - <<PY
+s = '''%s'''
+try:
+    print(s.isascii())
+except Exception:
+    print(False)
+PY
+            )
+            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            else
+                b64=$(python3 - <<PY
+import sys,base64
+print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
+PY
+ "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                omitted_message=true
                 skip_next=true
             fi
         else
