@@ -1344,23 +1344,34 @@ chmod +x "$REBASE_SCRIPT"
 QUERY_ERROR_SCRIPT=$(mktemp)
 trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
 
+# The query/error commit message format may be: "<title>" or "<title>: <additional>".
+# When re-running fixes we should replace the part after the last ":" with the new batch
+# message rather than appending repeatedly. If there's no colon we append as before.
 cat > "$QUERY_ERROR_SCRIPT" << 'EOFSCRIPT'
 #!/usr/bin/env bash
-# Append message to query/error commit
+# Update or append message to query/error commit
 
-# Get the current commit message
+# Get the current commit message (passed in as first arg)
 CURRENT_MSG="$1"
 
-# Check if batch message is provided
-if [ -n "$BATCH_MSG_ENV" ]; then
-    # Append ": message" to the existing query/error commit
-    NEW_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+# If no batch message provided, keep the current message (respecting prefix)
+if [ -z "$BATCH_MSG_ENV" ]; then
+    FULL_MSG="$CURRENT_MSG"
 else
-    # No batch message, keep as-is but ensure prefix is correct
-    NEW_MSG="$CURRENT_MSG"
+    # If the current message already contains a colon, replace everything after the last colon
+    # with the new batch message (strip leading spaces after colon). Otherwise append ": <msg>".
+    if echo "$CURRENT_MSG" | grep -q ":"; then
+        # Replace after last colon: split into head (up to last colon) and tail
+        head_part=$(echo "$CURRENT_MSG" | sed 's/\(.*\):.*/\1/')
+        # Trim trailing spaces in head_part
+        head_part=$(echo "$head_part" | sed 's/[[:space:]]*$//')
+        FULL_MSG="${head_part}: ${BATCH_MSG_ENV}"
+    else
+        FULL_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+    fi
 fi
-# Build the full commit message (without prefix)
-FULL_MSG="$NEW_MSG"
+
+# Apply COMMIT_PREFIX if needed
 if [ -n "$COMMIT_PREFIX" ]; then
     case "$FULL_MSG" in
         "$COMMIT_PREFIX"*) echo "$FULL_MSG" ;;
@@ -1373,10 +1384,10 @@ EOFSCRIPT
 
 chmod +x "$QUERY_ERROR_SCRIPT"
 
-# Replace COMMIT_PREFIX_PLACEHOLDER in query/error script
+# Replace COMMIT_PREFIX_PLACEHOLDER in query/error script (no-op kept for compatibility)
 ESCAPED_PREFIX=$(echo "$COMMIT_PREFIX" | sed 's/[\/&]/\\&/g')
-sed -i.bak "s/COMMIT_PREFIX_PLACEHOLDER/$ESCAPED_PREFIX/g" "$QUERY_ERROR_SCRIPT"
-rm -f "$QUERY_ERROR_SCRIPT.bak"
+sed -i.bak "s/COMMIT_PREFIX_PLACEHOLDER/$ESCAPED_PREFIX/g" "$QUERY_ERROR_SCRIPT" 2>/dev/null || true
+rm -f "$QUERY_ERROR_SCRIPT.bak" 2>/dev/null || true
 
 # Find the parent commit (the commit before the first AI commit in this batch)
 # If there's a query/error commit, start from before that
