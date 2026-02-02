@@ -281,6 +281,34 @@ except Exception:
 PY
 }
 
+# Preserve original numeric shortcut (e.g., user passed '86' or '-n 86' or '--number-search 86') so
+# we can always print a reproducible make invocation that includes it even if other logic omits it.
+ORIGINAL_NUMBER_RAW=""
+{
+  tmp_args=("$@")
+  for (( _i=0; _i<${#tmp_args[@]}; _i++ )); do
+    _a=${tmp_args[$_i]}
+    if [[ "$_a" =~ ^[0-9]+$ ]]; then
+      ORIGINAL_NUMBER_RAW="$_a"
+      break
+    fi
+    if [[ "$_a" == "-n" || "$_a" == "--number" ]]; then
+      _next=${tmp_args[$((_i+1))]:-}
+      if [[ "$_next" =~ ^[0-9]+$ ]]; then
+        ORIGINAL_NUMBER_RAW="$_next"
+        break
+      fi
+    fi
+    if [[ "$_a" == "--number-search" ]]; then
+      _next=${tmp_args[$((_i+1))]:-}
+      if [ -n "$_next" ]; then
+        ORIGINAL_NUMBER_RAW="$_next"
+        break
+      fi
+    fi
+  done
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --start-commit)
