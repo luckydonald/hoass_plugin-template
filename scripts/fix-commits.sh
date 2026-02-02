@@ -281,34 +281,6 @@ except Exception:
 PY
 }
 
-# Preserve original numeric shortcut (e.g., user passed '86' or '-n 86' or '--number-search 86') so
-# we can always print a reproducible make invocation that includes it even if other logic omits it.
-ORIGINAL_NUMBER_RAW=""
-{
-  tmp_args=("$@")
-  for (( _i=0; _i<${#tmp_args[@]}; _i++ )); do
-    _a=${tmp_args[$_i]}
-    if [[ "$_a" =~ ^[0-9]+$ ]]; then
-      ORIGINAL_NUMBER_RAW="$_a"
-      break
-    fi
-    if [[ "$_a" == "-n" || "$_a" == "--number" ]]; then
-      _next=${tmp_args[$((_i+1))]:-}
-      if [[ "$_next" =~ ^[0-9]+$ ]]; then
-        ORIGINAL_NUMBER_RAW="$_next"
-        break
-      fi
-    fi
-    if [[ "$_a" == "--number-search" ]]; then
-      _next=${tmp_args[$((_i+1))]:-}
-      if [ -n "$_next" ]; then
-        ORIGINAL_NUMBER_RAW="$_next"
-        break
-      fi
-    fi
-  done
-}
-
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --start-commit)
@@ -1764,21 +1736,6 @@ if git rebase -i "$REBASE_PARENT"; then
     fi
     if [ "$DRY_RUN" = true ]; then
         FINAL_ARGS+=("--dry-run")
-    fi
-
-    # If the user invoked the script with a raw numeric shortcut (e.g. `./scripts/fix-commits.sh 81`),
-    # ensure the printable FINAL_ARGS contains that as --number-search when it wasn't captured into NUMBER_SEARCH.
-    if [ -n "$ORIGINAL_NUMBER_RAW" ]; then
-        found_ns=false
-        for aa in "${FINAL_ARGS[@]}"; do
-            if [ "$aa" = "--number-search" ]; then
-                found_ns=true
-                break
-            fi
-        done
-        if [ "$found_ns" = false ]; then
-            FINAL_ARGS+=("--number-search" "$ORIGINAL_NUMBER_RAW")
-        fi
     fi
 
     # Do not build a printf-escaped FINAL_JOINED as it can produce $'...' for non-ASCII.
