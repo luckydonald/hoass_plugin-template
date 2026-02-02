@@ -442,13 +442,8 @@ if [ "$INTERACTIVE" = true ]; then
         display_args+=("--dry-run")
     fi
 
-    # Join with safe single-quoting for display
-    # Use printf %q to produce a bash-escaped representation per argument (safe to eval)
-    joined=""
-    for a in "${display_args[@]}"; do
-        esc=$(printf "%q" "$a")
-        joined="$joined $esc"
-    done
+    # Do not precompute a printf-escaped 'joined' (it can produce $'...' for non-ASCII).
+    # We'll use SHELL_JOINED / MAKE_JOINED below which handle base64 encoding when needed.
 
     linebreak
     print_info "Calculated command based on your interactive choices:"
@@ -499,16 +494,8 @@ if [ "$INTERACTIVE" = true ]; then
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             # lookahead to value
             val="${display_args[$((i+1))]}"
-            # Use python to check ascii-ness robustly
-            is_ascii=$(python3 - <<PY
-s = '''%s'''
-try:
-    print(s.isascii())
-except Exception:
-    print(False)
-PY
-            )
-            if [ "$is_ascii" = "True" ] || [ "$is_ascii" = "1" ]; then
+            # Use helper to check ascii-ness robustly
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_JOINED="$MAKE_JOINED $esc $vesc"
@@ -1751,13 +1738,8 @@ if git rebase -i "$REBASE_PARENT"; then
         FINAL_ARGS+=("--dry-run")
     fi
 
-    # joined is intentionally not constructed using printf %q to avoid $'...' escapes for non-ASCII
-    # Use SHELL_JOINED (constructed below) as the canonical, ASCII-safe printed invocation
-    joined=""
-    for a in "${FINAL_ARGS[@]}"; do
-        esc=$(printf "%q" "$a")
-        joined="$joined $esc"
-    done
+    # Do not build a printf-escaped FINAL_JOINED as it can produce $'...' for non-ASCII.
+    # Use SHELL_FINAL_JOINED / MAKE_FINAL_JOINED below which handle base64 encoding when needed.
     linebreak
     print_info "Final command to reproduce this operation:"
     # Build a shell-friendly final invocation similarly and convert non-ASCII messages to base64 flags
