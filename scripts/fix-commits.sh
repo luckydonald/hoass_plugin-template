@@ -1148,9 +1148,138 @@ if [ "$DRY_RUN" = true ]; then
         fi
     done
     echo
+    # Also print the final reproducible command (dry-run should show same summary as real run)
+    FINAL_CMD_PATH="./scripts/fix-commits.sh"
+    FINAL_ARGS=()
+    if [ -n "$START_COMMIT" ]; then
+        FINAL_ARGS+=("--start-commit" "$START_COMMIT")
+    fi
+    if [ -n "$END_COMMIT" ]; then
+        FINAL_ARGS+=("--end-commit" "$END_COMMIT")
+    fi
+    if [ "$IGNORE_BLOCKS" = true ]; then
+        FINAL_ARGS+=("--ignore-blocks")
+    fi
+    # effective ns
+    ns=""
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+    elif [ -n "$DETECTED_STEP" ]; then
+        ns="$DETECTED_STEP"
+    fi
+    if [ -n "$ns" ]; then
+        FINAL_ARGS+=("--number-search" "$ns")
+    fi
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        include_override=true
+        if [ -n "$ns" ]; then
+            if echo "$ns" | grep -q ','; then
+                include_override=true
+            else
+                ns_norm=$(normalize_step "$ns")
+                if [ "$no_norm" = "$ns_norm" ]; then
+                    include_override=false
+                fi
+            fi
+        fi
+        if [ "$include_override" = true ]; then
+            FINAL_ARGS+=("--number-override" "$no_norm")
+        fi
+    fi
+    if [ -n "$BATCH_MESSAGE" ]; then
+        if [ -n "$MESSAGE_B64" ]; then
+            FINAL_ARGS+=("--message-base64" "$MESSAGE_B64")
+        else
+            FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+        fi
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        FINAL_ARGS+=("--dry-run")
+    fi
+
+    # Build and print shell-friendly and make-friendly invocations
+    SHELL_FINAL_JOINED=""
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+            fi
+            skip_next=true
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_info "Final command to reproduce this operation (dry-run):"
+    print_code "$FINAL_CMD_PATH$SHELL_FINAL_JOINED"
+
+    MAKE_FINAL_JOINED=""
+    omitted_message=false
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_info "Or via make (positional shortcuts supported):"
+    if [ -n "$MAKE_FINAL_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_FINAL_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown above to run exactly."
+    fi
+
+    echo
     echo "⚠ This is a dry-run simulation; no tags or rebase operations were performed."
     exit 0
-fi
+ fi
 
 # Analyze commits for potential squashing
 print_info "Analyzing commits for potential squashing..."
@@ -1344,23 +1473,42 @@ chmod +x "$REBASE_SCRIPT"
 QUERY_ERROR_SCRIPT=$(mktemp)
 trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
 
+# The query/error commit message format may be: "<title>" or "<title>: <additional>".
+# When re-running fixes we should replace the part after the last ":" with the new batch
+# message rather than appending repeatedly. If there's no colon we append as before.
 cat > "$QUERY_ERROR_SCRIPT" << 'EOFSCRIPT'
 #!/usr/bin/env bash
-# Append message to query/error commit
+# Update or append message to query/error commit
 
-# Get the current commit message
+# Get the current commit message (passed in as first arg)
 CURRENT_MSG="$1"
 
-# Check if batch message is provided
-if [ -n "$BATCH_MSG_ENV" ]; then
-    # Append ": message" to the existing query/error commit
-    NEW_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+# If no batch message provided, keep the current message (respecting prefix)
+if [ -z "$BATCH_MSG_ENV" ]; then
+    FULL_MSG="$CURRENT_MSG"
 else
-    # No batch message, keep as-is but ensure prefix is correct
-    NEW_MSG="$CURRENT_MSG"
+    # If the message contains the known marker 'ai: updated query:' or 'ai: updated errors:'
+    # replace everything after that marker with the new batch message. This avoids
+    # repeated appends when the script is run multiple times.
+    if echo "$CURRENT_MSG" | grep -qiE "ai:[[:space:]]*updated[[:space:]]\+\(query\|errors\):"; then
+        # Extract up to and including the marker (preserve casing and any prefix)
+        head_part=$(echo "$CURRENT_MSG" | sed -n 's/\(.*ai:[[:space:]]*updated[[:space:]]\+\(query\|errors\):\).*/\1/p')
+        # Trim trailing whitespace from head_part
+        head_part=$(echo "$head_part" | sed 's/[[:space:]]*$//')
+        FULL_MSG="${head_part} ${BATCH_MSG_ENV}"
+    else
+        # Fallback: if there's any ':' present, replace after the last colon as before
+        if echo "$CURRENT_MSG" | grep -q ":"; then
+            head_part=$(echo "$CURRENT_MSG" | sed 's/\(.*\):.*/\1/')
+            head_part=$(echo "$head_part" | sed 's/[[:space:]]*$//')
+            FULL_MSG="${head_part}: ${BATCH_MSG_ENV}"
+        else
+            FULL_MSG="${CURRENT_MSG}: ${BATCH_MSG_ENV}"
+        fi
+    fi
 fi
-# Build the full commit message (without prefix)
-FULL_MSG="$NEW_MSG"
+
+# Apply COMMIT_PREFIX if needed
 if [ -n "$COMMIT_PREFIX" ]; then
     case "$FULL_MSG" in
         "$COMMIT_PREFIX"*) echo "$FULL_MSG" ;;
@@ -1373,10 +1521,10 @@ EOFSCRIPT
 
 chmod +x "$QUERY_ERROR_SCRIPT"
 
-# Replace COMMIT_PREFIX_PLACEHOLDER in query/error script
+# Replace COMMIT_PREFIX_PLACEHOLDER in query/error script (no-op kept for compatibility)
 ESCAPED_PREFIX=$(echo "$COMMIT_PREFIX" | sed 's/[\/&]/\\&/g')
-sed -i.bak "s/COMMIT_PREFIX_PLACEHOLDER/$ESCAPED_PREFIX/g" "$QUERY_ERROR_SCRIPT"
-rm -f "$QUERY_ERROR_SCRIPT.bak"
+sed -i.bak "s/COMMIT_PREFIX_PLACEHOLDER/$ESCAPED_PREFIX/g" "$QUERY_ERROR_SCRIPT" 2>/dev/null || true
+rm -f "$QUERY_ERROR_SCRIPT.bak" 2>/dev/null || true
 
 # Find the parent commit (the commit before the first AI commit in this batch)
 # If there's a query/error commit, start from before that
