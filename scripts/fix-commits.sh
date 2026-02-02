@@ -1766,6 +1766,21 @@ if git rebase -i "$REBASE_PARENT"; then
         FINAL_ARGS+=("--dry-run")
     fi
 
+    # If the user invoked the script with a raw numeric shortcut (e.g. `./scripts/fix-commits.sh 81`),
+    # ensure the printable FINAL_ARGS contains that as --number-search when it wasn't captured into NUMBER_SEARCH.
+    if [ -n "$ORIGINAL_NUMBER_RAW" ]; then
+        found_ns=false
+        for aa in "${FINAL_ARGS[@]}"; do
+            if [ "$aa" = "--number-search" ]; then
+                found_ns=true
+                break
+            fi
+        done
+        if [ "$found_ns" = false ]; then
+            FINAL_ARGS+=("--number-search" "$ORIGINAL_NUMBER_RAW")
+        fi
+    fi
+
     # Do not build a printf-escaped FINAL_JOINED as it can produce $'...' for non-ASCII.
     # Use SHELL_FINAL_JOINED / MAKE_FINAL_JOINED below which handle base64 encoding when needed.
     linebreak
