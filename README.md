@@ -208,6 +208,14 @@ The template is pre-configured with:
 - Correct `manifest.json`
 - Release automation
 
+## 📚 Compatibility
+
+<!-- compat-table-start -->
+Min. Homeassistant | Max. `plugin_template`
+-- | --
+[2024.1.0](https://www.home-assistant.io/) | [0.0.0-pre0](https://github.com/luckydonald/hoass_plugin_template/releases/tag/v0.0.0-pre0)
+<!-- compat-table-end -->
+
 ## 🤝 Contributing
 
 This is a template repository. To improve it:
@@ -235,4 +243,3 @@ Created for the Home Assistant community by [@luckydonald](https://github.com/lu
 ---
 
 **Ready to build your Home Assistant plugin? Run `./scripts/init.sh` to get started! 🚀**
-
