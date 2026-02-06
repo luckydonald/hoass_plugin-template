@@ -410,3 +410,19 @@ Okay, we need to work on the `eslint --fix` rules:
 
 ———
 Regarding [env.d.ts](../../frontend_vue/src/env.d.ts): Also export those `ha-*`  things from `HTMLElementTagNameMap` (e.g. ha-select) as HASelectElement etc. Probably define them first (there or types.ts, or a file on it's own, what's better), and use them in HTMLElementTagNameMap
+———
+Write/ modify a github pipeline, which would keep a compatibility table in the README.md.
+
+The table shall be added at the end, if not found. Regex:
+```py
+r"^\s*\|?\s*Min\.\sHomeassistant\s*\|\s*Max.\s*`\w+`\s*$"
+```
+Basically, adding (duplicating) a new table row on top once the homeassistant version in hacs.json is bumped,
+And upgrading the card_mod version of the first row on normal releases.
+For the first release, assume current versions.
+
+
+Min. Homeassistant | Max. `plugin_template`
+-- | --
+[2026.2.0](https://www.home-assistant.io/blog/2026/02/04/release-20262/) | [4.2.0](https://github.com/luckydonald/hoass_plugin_template/releases/tag/v4.2.0)
+[2026.1.0](https://www.home-assistant.io/blog/2026/01/07/release-20261/) | [4.1.0](https://github.com/luckydonald/hoass_plugin_templat/releases/tag/v4.1.0)
