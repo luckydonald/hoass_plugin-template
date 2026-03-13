@@ -432,3 +432,7 @@ Min. Homeassistant | Max. `plugin_template`
 ❯ having a claude.md in root is problematic for the actual project merging this in. Any ideas   
   how to best solve this - having claude pick this up here but not in projects where I merge    
   this into?
+❯ Implement option A, having a replacer like the `README.md`. For option B, `.gitattributes`,   
+  this would mean that changes (improvements) to the template would no longer merge into the    
+  created project?
+———
