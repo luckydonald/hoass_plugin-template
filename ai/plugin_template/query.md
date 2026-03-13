@@ -426,3 +426,9 @@ Min. Homeassistant | Max. `plugin_template`
 -- | --
 [2026.2.0](https://www.home-assistant.io/blog/2026/02/04/release-20262/) | [4.2.0](https://github.com/luckydonald/hoass_plugin_template/releases/tag/v4.2.0)
 [2026.1.0](https://www.home-assistant.io/blog/2026/01/07/release-20261/) | [4.1.0](https://github.com/luckydonald/hoass_plugin_templat/releases/tag/v4.1.0)
+———
+/init
+———
+❯ having a claude.md in root is problematic for the actual project merging this in. Any ideas   
+  how to best solve this - having claude pick this up here but not in projects where I merge    
+  this into?
