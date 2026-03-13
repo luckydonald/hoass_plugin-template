@@ -436,3 +436,6 @@ Min. Homeassistant | Max. `plugin_template`
   this would mean that changes (improvements) to the template would no longer merge into the    
   created project?
 ———
+❯ Fix the ai commit script currently picking up template repo commits when it also finds non-template commits/config. Also it must abort going     
+deeper when it encounters a merge commit, to make sure to not accidentially rebase a merge, which will be a headache.
+———
