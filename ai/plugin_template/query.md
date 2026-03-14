@@ -428,14 +428,22 @@ Min. Homeassistant | Max. `plugin_template`
 [2026.1.0](https://www.home-assistant.io/blog/2026/01/07/release-20261/) | [4.1.0](https://github.com/luckydonald/hoass_plugin_templat/releases/tag/v4.1.0)
 ———
 /init
+
 ———
+
 ❯ having a claude.md in root is problematic for the actual project merging this in. Any ideas   
   how to best solve this - having claude pick this up here but not in projects where I merge    
   this into?
 ❯ Implement option A, having a replacer like the `README.md`. For option B, `.gitattributes`,   
   this would mean that changes (improvements) to the template would no longer merge into the    
   created project?
+
 ———
+
 ❯ Fix the ai commit script currently picking up template repo commits when it also finds non-template commits/config. Also it must abort going     
 deeper when it encounters a merge commit, to make sure to not accidentially rebase a merge, which will be a headache.
+
+———
+
+❯ Running `make release` fails if it's not a python project (`ruff` not found).                                                                    
 ———
