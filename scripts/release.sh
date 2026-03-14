@@ -211,13 +211,17 @@ chmod +x scripts/commit.sh
 echo ""
 echo -e "${GREEN}🔧 Step 3: Auto-fix lint errors${NC}"
 # Python autofix
-uv run ruff check --fix custom_components/ || true
-if ! git diff --quiet -- custom_components/; then
-    git add -u custom_components/
-    git commit -m "$(reason="ruff autofix" emoji="🐍" tmpl "${COMMIT_MSG_AUTOFIX}")"
-    echo "  Committed auto-fixed lint errors"
+if [ "${KEEP_BACKEND}" = "true" ]; then
+    uv run ruff check --fix custom_components/ || true
+    if ! git diff --quiet -- custom_components/; then
+        git add -u custom_components/
+        git commit -m "$(reason="ruff autofix" emoji="🐍" tmpl "${COMMIT_MSG_AUTOFIX}")"
+        echo "  Committed auto-fixed lint errors"
+    else
+        echo "  No auto-fixable lint errors"
+    fi
 else
-    echo "  No auto-fixable lint errors"
+    echo "  No Python backend - skipping ruff autofix"
 fi
 
 # Frontend autofix (eslint) - only if frontend exists
@@ -273,23 +277,31 @@ else
 fi
 
 # Verify no errors remain after autofix
-echo "  Verifying no errors remain..."
-if ! uv run ruff check custom_components/; then
-    echo -e "${RED}  Error: Unfixable lint errors remain${NC}"
-    exit 1
+if [ "${KEEP_BACKEND}" = "true" ]; then
+    echo "  Verifying no errors remain..."
+    if ! uv run ruff check custom_components/; then
+        echo -e "${RED}  Error: Unfixable lint errors remain${NC}"
+        exit 1
+    fi
+    echo "  All lint errors resolved!"
+else
+    echo "  No Python backend - skipping ruff verify"
 fi
-echo "  All lint errors resolved!"
 
 # Step 4: Run Python formatter and commit
 echo ""
 echo -e "${GREEN} Step 4: Format Python code${NC}"
-uv run ruff format custom_components/
-if ! git diff --quiet -- custom_components/; then
-    git add -u custom_components/
-    git commit -m "$(reason="ruff autoformat" emoji="🐍" tmpl "${COMMIT_MSG_LINT}")"
-    echo "  Committed Python formatting changes"
+if [ "${KEEP_BACKEND}" = "true" ]; then
+    uv run ruff format custom_components/
+    if ! git diff --quiet -- custom_components/; then
+        git add -u custom_components/
+        git commit -m "$(reason="ruff autoformat" emoji="🐍" tmpl "${COMMIT_MSG_LINT}")"
+        echo "  Committed Python formatting changes"
+    else
+        echo "  No Python formatting changes needed"
+    fi
 else
-    echo "  No Python formatting changes needed"
+    echo "  No Python backend - skipping Python format"
 fi
 
 # Step 5: Run TS formatter and commit
@@ -330,13 +342,27 @@ fi
 # now actually bump the version
 echo ""
 echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
-sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "custom_components/${SNAKE_NAME}/manifest.json"
-rm -f "custom_components/${SNAKE_NAME}/manifest.json.bak"
-echo "  Updated manifest.json to ${NEW_VERSION}"
-
-git add "custom_components/${SNAKE_NAME}/manifest.json"
-git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
-echo "  Committed version bump"
+VERSION_FILES_CHANGED=false
+if [ "${KEEP_BACKEND}" = "true" ] && [ -f "custom_components/${SNAKE_NAME}/manifest.json" ]; then
+    sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "custom_components/${SNAKE_NAME}/manifest.json"
+    rm -f "custom_components/${SNAKE_NAME}/manifest.json.bak"
+    echo "  Updated custom_components/${SNAKE_NAME}/manifest.json to ${NEW_VERSION}"
+    git add "custom_components/${SNAKE_NAME}/manifest.json"
+    VERSION_FILES_CHANGED=true
+fi
+if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
+    sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "${FRONTEND_DIR}/package.json"
+    rm -f "${FRONTEND_DIR}/package.json.bak"
+    echo "  Updated ${FRONTEND_DIR}/package.json to ${NEW_VERSION}"
+    git add "${FRONTEND_DIR}/package.json"
+    VERSION_FILES_CHANGED=true
+fi
+if [ "${VERSION_FILES_CHANGED}" = "true" ]; then
+    git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
+    echo "  Committed version bump"
+else
+    echo -e "${YELLOW}  Warning: No version files found to update${NC}"
+fi
 
 # Check if tag already exists
 if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
