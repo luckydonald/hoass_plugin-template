@@ -182,10 +182,14 @@ fi
 # Step 1: Check for type errors (not lint - we'll fix those in step 3)
 echo ""
 echo -e "${GREEN}🔍 Step 1: Check for type errors${NC}"
-if ! command -v uv &> /dev/null; then
-    echo -e "${RED}  Error: uv not found${NC}"
-    echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
-    exit 1
+if [ "${KEEP_BACKEND}" = "true" ]; then
+    if ! command -v uv &> /dev/null; then
+        echo -e "${RED}  Error: uv not found${NC}"
+        echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        exit 1
+    fi
+else
+    echo "  No Python backend - skipping uv check"
 fi
 echo "  Running frontend type-check..."
 if [ -n "${FRONTEND_DIR}" ] && [ -f "${FRONTEND_DIR}/package.json" ]; then
