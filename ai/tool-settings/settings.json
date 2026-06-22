@@ -195,7 +195,8 @@
       "Bash(GIT_SEQUENCE_EDITOR=/tmp/git-rebase-todo.sh git rebase *)",
       "Bash(echo \"---\")",
       "Bash(echo ---)",
-      "Bash(echo '---')"
+      "Bash(echo '---')",
+      "Bash(make commit)"
     ],
     "deny": [
       "Read(**/.env*)",
